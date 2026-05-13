@@ -80,7 +80,7 @@ export class ModeManager {
         return true;
     }
 
-    public static filterMenu(products: Product[]): Product[] {
-        return products.filter(p => p.getMode() === this.currentMode || p.getMode() === 'Both');
+    public static filterMenu(products: Product[], mode: string): Product[] {
+        return products.filter(p => p.getMode() === mode || p.getMode() === 'Both');
     }
 }

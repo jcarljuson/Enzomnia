@@ -37,7 +37,7 @@ export function renderProducts(): void {
     drinksGrid.innerHTML = '';
     pastriesGrid.innerHTML = '';
 
-    const visibleProducts = ModeManager.filterMenu(allProducts);
+    const visibleProducts = ModeManager.filterMenu(allProducts, ModeManager.currentMode);
 
     visibleProducts.forEach(product => {
         const isDrink = product instanceof Beverage;
