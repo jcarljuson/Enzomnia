@@ -19,8 +19,8 @@ export class ModeManager {
 
         this.currentMode = this.currentMode === 'Day' ? 'Night' : 'Day';
         this.applyTheme();
-        if (typeof renderProducts === 'function') renderProducts();
-        if (typeof showModal === 'function') showModal(`Switched to ${this.currentMode} Mode!`);
+        if (typeof (window as any).renderProducts === 'function') (window as any).renderProducts();
+        if (typeof (window as any).showModal === 'function') (window as any).showModal(`Switched to ${this.currentMode} Mode!`);
     }
 
     public static applyTheme(): void {

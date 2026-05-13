@@ -289,3 +289,11 @@ function raf(time: number): void {
 }
 
 requestAnimationFrame(raf);
+
+// Export functions to global scope for HTML/other modules
+(window as any).renderProducts = renderProducts;
+(window as any).addToCart = addToCart;
+(window as any).toggleCart = toggleCart;
+(window as any).updateCartUI = updateCartUI;
+(window as any).showModal = showModal;
+(window as any).handleAuthClick = handleAuthClick;
