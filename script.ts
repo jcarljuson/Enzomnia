@@ -64,19 +64,18 @@ export function renderProducts(): void {
     });
 }
 
-(window as any).addToCart = function (productId: string) {
+export function addToCart(productId: string): void {
     const product = allProducts.find(p => p.getProductId() === productId);
     if (product) {
         myCart.addItem(product, 1);
     }
-};
+}
 
-(window as any).removeFromCart = function (productId: string) {
+export function removeFromCart(productId: string): void {
     myCart.removeItem(productId);
-};
+}
 
-(window as any).updateCartUI = updateCartUI;
-(window as any).toggleCart = toggleCart;
+// UI functions are exported to window at the end of the file
 
 export function updateCartUI(): void {
     const container = document.getElementById('cart-items-container');
@@ -244,7 +243,7 @@ function createLeaf(container: HTMLElement): void {
     container.appendChild(leaf);
 }
 
-(window as any).handleAuthClick = function(): void {
+export function handleAuthClick(): void {
     if (!isLoggedIn && (window as any).google) {
         google.accounts.id.prompt();
     }
@@ -293,6 +292,7 @@ requestAnimationFrame(raf);
 // Export functions to global scope for HTML/other modules
 (window as any).renderProducts = renderProducts;
 (window as any).addToCart = addToCart;
+(window as any).removeFromCart = removeFromCart;
 (window as any).toggleCart = toggleCart;
 (window as any).updateCartUI = updateCartUI;
 (window as any).showModal = showModal;
