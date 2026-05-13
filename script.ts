@@ -166,10 +166,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let logoClicks = 0;
     let logoTimer: any;
     let isLocked = false;
-    const logoImg = document.querySelector('.logo-img') as HTMLElement;
+    const logoContainer = document.querySelector('.logo') as HTMLElement;
 
-    if (logoImg) {
-        logoImg.addEventListener('click', () => {
+    if (logoContainer) {
+        logoContainer.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent event from bubbling up
             if (isLocked) return;
 
             logoClicks++;
