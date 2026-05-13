@@ -46,7 +46,7 @@ export class ModeManager {
         let lastTime = Date.now();
         let shakeStartTime: number | null = null;
         const shakeThreshold = 60; // Moderate threshold since duration is now the main filter
-        const requiredDuration = 3000; // 3 seconds of continuous shaking
+        const requiredDuration = 2000; // 2 seconds of continuous shaking
 
         window.addEventListener('devicemotion', (e: DeviceMotionEvent) => {
             const current = e.accelerationIncludingGravity;
