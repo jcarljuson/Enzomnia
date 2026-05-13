@@ -196,6 +196,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // GYROSCOPE SHAKE DETECTION (iOS requires a user gesture like a click)
     if (typeof DeviceMotionEvent !== 'undefined' && typeof (DeviceMotionEvent as any).requestPermission === 'function') {
         document.body.addEventListener('click', function req() {
+            // Kickstart video for iOS
+            const video = document.getElementById('hero-video') as HTMLVideoElement;
+            if (video) {
+                video.play().catch(() => {
+                    // If it still fails (e.g. Low Power Mode), we just ignore
+                });
+            }
+
             (DeviceMotionEvent as any).requestPermission().then((state: string) => {
                 if (state === 'granted') {
                     ModeManager.detectShake();
