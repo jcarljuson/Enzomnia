@@ -28,10 +28,12 @@ export class ModeManager {
         const heroSubtitle = document.getElementById('hero-subtitle');
         if (this.currentMode === 'Night') {
             document.body.classList.add('night-mode');
+            document.documentElement.classList.add('night-mode');
             if (heroTitle) heroTitle.textContent = "Enzomnia";
             if (heroSubtitle) heroSubtitle.textContent = "Fuel for the night owls.";
         } else {
             document.body.classList.remove('night-mode');
+            document.documentElement.classList.remove('night-mode');
             if (heroTitle) heroTitle.textContent = "Enzomnia";
             if (heroSubtitle) heroSubtitle.textContent = "Try out something unique today.";
         }

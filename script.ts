@@ -193,20 +193,31 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    //GYROSCOPE SHAKE DETECTION FOR PHONES ONLY
-    if (typeof DeviceMotionEvent !== 'undefined') {
-        if (typeof (DeviceMotionEvent as any).requestPermission === 'function') {
-            document.body.addEventListener('click', function req() {
+    // START EXPERIENCE (Handles iOS Gyroscope Permission)
+    const startBtn = document.getElementById('start-btn');
+    const startOverlay = document.getElementById('start-overlay');
+    if (startBtn && startOverlay) {
+        startBtn.addEventListener('click', () => {
+            // Request Gyro permission for iOS
+            if (typeof DeviceMotionEvent !== 'undefined' && typeof (DeviceMotionEvent as any).requestPermission === 'function') {
                 (DeviceMotionEvent as any).requestPermission().then((state: string) => {
                     if (state === 'granted') {
                         ModeManager.detectShake();
                     }
                 }).catch(console.error);
-                document.body.removeEventListener('click', req);
-            }, { once: true });
-        } else {
-            ModeManager.detectShake();
-        }
+            } else {
+                ModeManager.detectShake();
+            }
+
+            // Hide overlay
+            startOverlay.style.opacity = '0';
+            setTimeout(() => {
+                startOverlay.style.display = 'none';
+            }, 800);
+        });
+    } else {
+        // Fallback for browsers without the overlay
+        ModeManager.detectShake();
     }
 
     (window as any).onload = function () {

@@ -1,12 +1,47 @@
-body {
+html, body {
     margin: 0;
     font-family: 'Plus Jakarta Sans', sans-serif;
-    background-color: #f9fbf9;
+    background-color: #f9fbf9; /* Default Day */
     color: #1e3932;
-    padding-top: 140px;
     overflow-x: hidden;
-    transition: background-color 1.5s ease, color 1.5s ease;
 }
+
+body {
+    padding-top: 140px;
+    transition: background-color 0.8s ease, color 0.8s ease;
+}
+
+#start-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #0a0c0b;
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    color: white;
+    transition: opacity 0.8s ease;
+}
+
+.start-content h1 { font-size: 2rem; margin: 20px 0; font-weight: 800; }
+.start-logo { width: 100px; height: 100px; border-radius: 50%; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+#start-btn { 
+    padding: 15px 40px; 
+    font-size: 1.1rem; 
+    font-weight: bold; 
+    border-radius: 50px; 
+    border: none; 
+    background: #1e3932; 
+    color: white; 
+    cursor: pointer;
+    margin-top: 30px;
+    transition: transform 0.2s;
+}
+#start-btn:active { transform: scale(0.95); }
 
 #intro-overlay {
     position: fixed;
@@ -17,7 +52,7 @@ body {
     background: #f9fbf9;
     z-index: 2000;
     pointer-events: none;
-    transition: opacity 3.5s ease-in-out, background-color 0.4s ease;
+    transition: opacity 2s ease-in-out, background-color 0.4s ease;
 }
 
 .leaf {
@@ -498,7 +533,7 @@ body.night-mode .cart-badge {
 }
 
 /* --- Night Mode Styles --- */
-body.night-mode { 
+html.night-mode, body.night-mode { 
     background-color: #0a0c0b; 
     color: #e0e0e0; 
     position: relative;
