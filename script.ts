@@ -150,8 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 100);
     }
 
-    const modeBtn = document.getElementById('mode-toggle-btn');
-    if (modeBtn) modeBtn.addEventListener('click', () => ModeManager.toggleMode());
+    // Mode button is now handled via logo triple-click or shake
     
     const cartToggleBtn = document.getElementById('cart-toggle-btn');
     if (cartToggleBtn) cartToggleBtn.addEventListener('click', toggleCart);
@@ -169,9 +168,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const logoContainer = document.querySelector('.logo') as HTMLElement;
 
     if (logoContainer) {
-        logoContainer.addEventListener('click', (e) => {
-            e.stopPropagation(); // Prevent event from bubbling up
+        logoContainer.addEventListener('pointerdown', (e) => {
+            e.stopPropagation();
             if (isLocked) return;
+
+            // Visual feedback pulse
+            logoContainer.style.transform = 'translate(-50%, -50%) scale(0.9)';
+            setTimeout(() => {
+                logoContainer.style.transform = 'translate(-50%, -50%) scale(1)';
+            }, 100);
 
             logoClicks++;
             clearTimeout(logoTimer);
