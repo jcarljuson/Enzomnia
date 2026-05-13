@@ -10,7 +10,13 @@ export class ModeManager {
         return (hour >= 18 || hour < 6) ? 'Night' : 'Day';
     })();
 
+    private static lastToggle: number = 0;
+
     public static toggleMode(): void {
+        const now = Date.now();
+        if (now - this.lastToggle < 2000) return; // Prevent rapid-fire toggling
+        this.lastToggle = now;
+
         this.currentMode = this.currentMode === 'Day' ? 'Night' : 'Day';
         this.applyTheme();
         if (typeof renderProducts === 'function') renderProducts();
@@ -36,7 +42,7 @@ export class ModeManager {
         let lastY: number | null = null;
         let lastZ: number | null = null;
         let lastTime = Date.now();
-        const shakeThreshold = 15;
+        const shakeThreshold = 30; // Increased from 15 to reduce accidental triggers
 
         window.addEventListener('devicemotion', (e: DeviceMotionEvent) => {
             const current = e.accelerationIncludingGravity;

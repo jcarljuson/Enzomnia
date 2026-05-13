@@ -10,18 +10,18 @@ declare class Lenis {
 
 const allProducts: Product[] = [
     // Day Menu
-    new Beverage("D1", "Zo's Morning Brew", 120, "Day", 50, "assets/UnderDevelopmentImage.png", "Regular", true),
-    new Beverage("D2", "Zo's Iced Matcha Latte", 160, "Day", 30, "assets/UnderDevelopmentImage.png", "Large", false),
-    new FoodItem("F1", "Zo's Avocado Toast", 180, "Day", 20, "assets/UnderDevelopmentImage.png", "Vegan"),
+    new Beverage("D1", "Zo's Morning Brew", 120, "Day", 50, "/assets/UnderDevelopmentImage.png", "Regular", true),
+    new Beverage("D2", "Zo's Iced Matcha Latte", 160, "Day", 30, "/assets/UnderDevelopmentImage.png", "Large", false),
+    new FoodItem("F1", "Zo's Avocado Toast", 180, "Day", 20, "/assets/UnderDevelopmentImage.png", "Vegan"),
 
     // Night Menu
-    new Beverage("N1", "Zo's Midnight Espresso", 140, "Night", 40, "assets/UnderDevelopmentImage.png", "Small", true),
-    new Beverage("N2", "Zo's Chamomile Tea", 110, "Night", 25, "assets/UnderDevelopmentImage.png", "Regular", true),
-    new FoodItem("F2", "Zo's Dark Chocolate Cake", 150, "Night", 20, "assets/UnderDevelopmentImage.png", "Vegetarian"),
+    new Beverage("N1", "Zo's Midnight Espresso", 140, "Night", 40, "/assets/UnderDevelopmentImage.png", "Small", true),
+    new Beverage("N2", "Zo's Chamomile Tea", 110, "Night", 25, "/assets/UnderDevelopmentImage.png", "Regular", true),
+    new FoodItem("F2", "Zo's Dark Chocolate Cake", 150, "Night", 20, "/assets/UnderDevelopmentImage.png", "Vegetarian"),
 
     // Both
-    new Beverage("B1", "Zo's Signature Latte", 150, "Both", 100, "assets/UnderDevelopmentImage.png", "Regular", true),
-    new FoodItem("B2", "Zo's Blueberry Muffin", 110, "Both", 30, "assets/UnderDevelopmentImage.png", "Normal")
+    new Beverage("B1", "Zo's Signature Latte", 150, "Both", 100, "/assets/UnderDevelopmentImage.png", "Regular", true),
+    new FoodItem("B2", "Zo's Blueberry Muffin", 110, "Both", 30, "/assets/UnderDevelopmentImage.png", "Normal")
 ];
 
 const myCart = new Cart("C1", "GUEST_1");
