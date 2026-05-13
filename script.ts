@@ -55,7 +55,7 @@ export function renderProducts(): void {
                 <div class="divider"></div>
                 <div class="item-meta">
                     <span class="price">₱${product.getPrice().toFixed(2)}</span>
-                    <span class="type">${isDrink ? ((product as Beverage).getIsHot() ? 'Hot' : 'Iced') + ' • ' + (product as Beverage).getSize() : (product as FoodItem).getDietType()}</span>
+                    <span class="type">${isDrink ? ((product as Beverage).getIsHot() ? 'Hot' : 'Iced') : (product as FoodItem).getDietType()}</span>
                 </div>
                 <button onclick="addToCart('${product.getProductId()}')">Add to Cart</button>
             </div>
