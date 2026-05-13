@@ -42,21 +42,32 @@ export class ModeManager {
         let lastY: number | null = null;
         let lastZ: number | null = null;
         let lastTime = Date.now();
-        const shakeThreshold = 150; // Set to extremely high to require a very hard, intentional shake
+        let shakeStartTime: number | null = null;
+        const shakeThreshold = 60; // Moderate threshold since duration is now the main filter
+        const requiredDuration = 3000; // 3 seconds of continuous shaking
 
         window.addEventListener('devicemotion', (e: DeviceMotionEvent) => {
             const current = e.accelerationIncludingGravity;
-            if (!current) return;
+            if (!current || current.x === null || current.y === null || current.z === null) return;
 
             const currentTime = Date.now();
             if ((currentTime - lastTime) > 100) {
                 const diffTime = currentTime - lastTime;
                 lastTime = currentTime;
 
-                if (lastX !== null && lastY !== null && lastZ !== null && current.x !== null && current.y !== null && current.z !== null) {
+                if (lastX !== null && lastY !== null && lastZ !== null) {
                     const speed = Math.abs(current.x + current.y + current.z - lastX - lastY - lastZ) / diffTime * 10000;
+                    
                     if (speed > shakeThreshold) {
-                        this.toggleMode();
+                        if (shakeStartTime === null) {
+                            shakeStartTime = currentTime;
+                        } else if (currentTime - shakeStartTime > requiredDuration) {
+                            this.toggleMode();
+                            shakeStartTime = null; // Reset after successful toggle
+                        }
+                    } else {
+                        // Reset if the shaking intensity drops
+                        shakeStartTime = null;
                     }
                 }
                 lastX = current.x;
