@@ -42,7 +42,7 @@ export class ModeManager {
         let lastY: number | null = null;
         let lastZ: number | null = null;
         let lastTime = Date.now();
-        const shakeThreshold = 80; // Increased significantly to require vigorous shaking
+        const shakeThreshold = 150; // Set to extremely high to require a very hard, intentional shake
 
         window.addEventListener('devicemotion', (e: DeviceMotionEvent) => {
             const current = e.accelerationIncludingGravity;
