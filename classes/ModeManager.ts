@@ -1,0 +1,67 @@
+import { Product } from './Product';
+
+// Declare functions used in script.js
+declare function renderProducts(): void;
+declare function showModal(msg: string): void;
+
+export class ModeManager {
+    public static currentMode: 'Day' | 'Night' = (() => {
+        const hour = new Date().getHours();
+        return (hour >= 18 || hour < 6) ? 'Night' : 'Day';
+    })();
+
+    public static toggleMode(): void {
+        this.currentMode = this.currentMode === 'Day' ? 'Night' : 'Day';
+        this.applyTheme();
+        if (typeof renderProducts === 'function') renderProducts();
+        if (typeof showModal === 'function') showModal(`Switched to ${this.currentMode} Mode!`);
+    }
+
+    public static applyTheme(): void {
+        const heroTitle = document.getElementById('hero-title');
+        const heroSubtitle = document.getElementById('hero-subtitle');
+        if (this.currentMode === 'Night') {
+            document.body.classList.add('night-mode');
+            if (heroTitle) heroTitle.textContent = "Enzomnia";
+            if (heroSubtitle) heroSubtitle.textContent = "Fuel for the night owls.";
+        } else {
+            document.body.classList.remove('night-mode');
+            if (heroTitle) heroTitle.textContent = "Enzomnia";
+            if (heroSubtitle) heroSubtitle.textContent = "Try out something unique today.";
+        }
+    }
+
+    public static detectShake(): boolean {
+        let lastX: number | null = null;
+        let lastY: number | null = null;
+        let lastZ: number | null = null;
+        let lastTime = Date.now();
+        const shakeThreshold = 15;
+
+        window.addEventListener('devicemotion', (e: DeviceMotionEvent) => {
+            const current = e.accelerationIncludingGravity;
+            if (!current) return;
+
+            const currentTime = Date.now();
+            if ((currentTime - lastTime) > 100) {
+                const diffTime = currentTime - lastTime;
+                lastTime = currentTime;
+
+                if (lastX !== null && lastY !== null && lastZ !== null && current.x !== null && current.y !== null && current.z !== null) {
+                    const speed = Math.abs(current.x + current.y + current.z - lastX - lastY - lastZ) / diffTime * 10000;
+                    if (speed > shakeThreshold) {
+                        this.toggleMode();
+                    }
+                }
+                lastX = current.x;
+                lastY = current.y;
+                lastZ = current.z;
+            }
+        });
+        return true;
+    }
+
+    public static filterMenu(products: Product[]): Product[] {
+        return products.filter(p => p.getMode() === this.currentMode || p.getMode() === 'Both');
+    }
+}
