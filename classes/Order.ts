@@ -16,6 +16,11 @@ export abstract class Order {
     }
 
     public getOrderId(): string { return this.orderId; }
+    public getCustomerName(): string { return this.customerName; }
+    public getOrderDateTime(): string { return this.orderDateTime; }
+    public getStatus(): string { return this.status; }
+    public getModeAtOrder(): string { return this.modeAtOrder; }
+
     public calculateTotal(): number { return this.totalAmount; }
     public displayOrderInfo(): void {
         console.log(`Order ${this.orderId} by ${this.customerName}`);
