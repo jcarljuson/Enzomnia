@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://www.paypal.com/sdk/js?client-id=test&currency=PHP"></script>
 </head>
 
 <body>
@@ -37,10 +37,16 @@
                     <span id="cart-badge" class="cart-badge" style="display: none;">0</span>
                 </div>
                 <div id="auth-container">
-                    <div id="profile-target" class="profile-icon" onclick="handleAuthClick()">
-                        <img id="display-img"
-                            src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_Selection_G_Suite_web_24dp.png"
-                            alt="Google Logo">
+                    <div id="profile-target" class="profile-icon" onclick="handleLogin()">
+                        <svg id="default-user-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        <img id="display-img" src="" alt="Profile Image" style="display: none;">
+                    </div>
+                    <div class="auth-text">
+                        <span id="auth-label" style="cursor: pointer;" onclick="handleLogin()">Login</span>
+                        <span id="logout-btn" style="display: none; cursor: pointer;" onclick="handleLogout()">Logout</span>
                     </div>
                 </div>
             </div>
@@ -90,7 +96,14 @@
             <!-- Cart items go here dynamically -->
         </div>
         <div class="cart-footer">
+            <div id="token-discount-section" style="display: none; margin-bottom: 10px; font-size: 0.9rem; color: #4caf50; font-weight: bold;">
+                <label style="cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                    <input type="checkbox" id="use-tokens-checkbox" onchange="toggleTokens()">
+                    <span>Apply <span id="applicable-tokens">0</span> tokens for ₱<span id="applicable-discount">0</span> off!</span>
+                </label>
+            </div>
             <div class="cart-total"><span>Total:</span> <span>₱<span id="cart-total-amount">0.00</span></span></div>
+            <p id="token-promo" class="token-promo">Login to collect tokens with every purchase!</p>
             <button id="checkout-btn" class="btn">Checkout</button>
         </div>
     </div>
@@ -100,7 +113,83 @@
     <!-- Lenis Smooth Scrolling -->
     <script src="https://unpkg.com/lenis@latest/dist/lenis.min.js"></script>
 
-    <!-- Vite handles the TypeScript compilation automatically -->
+    <!-- Checkout Modal -->
+    <div id="checkout-modal" class="modal hidden">
+        <div class="modal-content checkout-content premium">
+            <div class="checkout-header">
+                <h2>Complete Your Order</h2>
+                <p>Customize your experience</p>
+            </div>
+            
+            <form id="checkout-form">
+                <div class="form-section">
+                    <h3>Order Type</h3>
+                    <div class="selection-grid">
+                        <label class="selection-card">
+                            <input type="radio" name="orderType" value="dinein" checked>
+                            <div class="card-content">
+                                <span>Dine In</span>
+                            </div>
+                        </label>
+                        <label class="selection-card">
+                            <input type="radio" name="orderType" value="pickup">
+                            <div class="card-content">
+                                <span>Pickup</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div id="dinein-fields" class="dynamic-field form-section fade-in" style="display: none;">
+                    <!-- Table number randomized server-side, guests removed -->
+                </div>
+
+                <div id="pickup-fields" class="dynamic-field hidden form-section fade-in" style="display: none;">
+                    <label for="pickup-time" class="standard-label">Pickup Time</label>
+                    <input type="time" id="pickup-time" class="standard-input" onclick="try{this.showPicker()}catch(e){}">
+                </div>
+
+                <div class="form-section">
+                    <h3>Payment Method</h3>
+                    <div class="selection-grid">
+                        <label class="selection-card">
+                            <input type="radio" name="paymentType" value="cash" checked>
+                            <div class="card-content">
+                                <span>Cash</span>
+                            </div>
+                        </label>
+                        <label class="selection-card">
+                            <input type="radio" name="paymentType" value="paypal">
+                            <div class="card-content">
+                                <span>PayPal / Card</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+
+
+                <div id="paypal-fields" class="dynamic-field hidden form-section fade-in" style="display: none; width: 100%; position: relative; z-index: 10001;">
+                    <div id="paypal-button-container"></div>
+                </div>
+
+                <div class="form-section receipt-toggle">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="download-receipt" checked>
+                        <span class="slider"></span>
+                        <span class="label-text">Download Receipt (.txt)</span>
+                    </label>
+                </div>
+
+                <div class="modal-actions premium-actions">
+                    <button type="button" id="cancel-checkout-btn" class="btn outline-btn">Cancel</button>
+                    <button type="submit" id="confirm-checkout-btn" class="btn primary-btn">Confirm Order</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs are loaded via ES modules in main.ts/script.ts -->
     <script type="module" src="/script.ts"></script>
 </body>
 
