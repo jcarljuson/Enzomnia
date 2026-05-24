@@ -1,0 +1,199 @@
+%%{init: {
+  'theme': 'base',
+  'themeVariables': {
+    'primaryColor': '#ffffff',
+    'primaryTextColor': '#000000',
+    'primaryBorderColor': '#000000',
+    'lineColor': '#000000',
+    'secondaryColor': '#ffffff',
+    'tertiaryColor': '#ffffff',
+    'mainBkg': '#ffffff',
+    'actorBkg': '#ffffff',
+    'actorBorder': '#000000',
+    'classText': '#000000',
+    'nodeBorder': '#000000',
+    'nodeTextColor': '#000000'
+  }
+}}%%
+classDiagram
+    %% Core Product System
+    class Product {
+        <<abstract>>
+        #productId: string
+        #name: string
+        #price: number
+        #mode: 'Day' | 'Night' | 'Both'
+        #stock: number
+        #image: string
+        +getProductId() string
+        +getName() string
+        +getPrice() number
+        +getMode() string
+        +getStock() number
+        +getImage() string
+        +reduceStock(qty) void
+    }
+
+    class Beverage {
+        -size: string
+        -isHot: boolean
+        +getSize() string
+        +getIsHot() boolean
+    }
+
+    class FoodItem {
+        -dietType: string
+        +getDietType() string
+    }
+
+    Product <|-- Beverage
+    Product <|-- FoodItem
+
+    %% Cart & Order System
+    class Cart {
+        -cartId: string
+        -userId: string
+        +items: CartItem[]
+        +total: number
+        +addItem(product, qty) void
+        +removeItem(prodId) void
+        +checkout() DineInOrder | null
+    }
+
+    class CartItem {
+        -product: Product
+        -quantity: number
+        -itemPrice: number
+        +getProduct() Product
+        +getQuantity() number
+        +setQuantity(qty) void
+        +calcTotal() number
+    }
+
+    Cart "1" *-- "many" CartItem : contains
+    CartItem "1" o-- "1" Product : references
+
+    class Order {
+        <<abstract>>
+        #orderId: string
+        #customerName: string
+        #orderDateTime: string
+        +totalAmount: number
+        #status: string
+        #modeAtOrder: string
+        +getOrderId() string
+        +calculateTotal() number
+        +displayOrderInfo() void
+    }
+
+    class DineInOrder {
+        -tableNo: number
+        -guests: number
+        +assignTable(table) void
+    }
+
+    class PickupOrder {
+        -pickupTime: string
+        -qrCode: string
+        +generateQRCode() void
+    }
+
+    Order <|-- DineInOrder
+    Order <|-- PickupOrder
+
+    %% User System
+    class User {
+        <<abstract>>
+        #userId: string
+        #name: string
+        #email: string
+        #phone: string
+        +login()* boolean
+        +viewOrders() void
+    }
+
+    class GuestUser {
+        -sessionId: string
+        +login() boolean
+    }
+
+    class RegisteredUser {
+        -prefMode: string
+        +login() boolean
+    }
+
+    User <|-- GuestUser
+    User <|-- RegisteredUser
+
+    %% Payment System
+    class IPayment {
+        <<interface>>
+        +process()* boolean
+    }
+
+    class Payment {
+        <<abstract>>
+        #paymentId: string
+        #amount: number
+        #status: string
+        +process()* boolean
+    }
+
+    class CreditCard {
+        -cardNo: string
+        +process() boolean
+    }
+
+    class CashPayment {
+        -cashTender: number
+        +process() boolean
+    }
+
+    IPayment <|.. Payment
+    Payment <|-- CreditCard
+    Payment <|-- CashPayment
+
+    %% Vibe/Mode Management
+    class ModeManager {
+        +currentMode: 'Day' | 'Night'
+        -lastToggle: number
+        +toggleMode() void
+        +applyTheme() void
+        +detectShake() boolean
+        +filterMenu(products, mode) Product[]
+    }
+
+    ModeManager ..> Product : filters
+
+    %% File Management System
+    class FileManager {
+        +saveReceipt(order, items) void
+        +exportInventory(products) void
+    }
+
+    FileManager ..> Order : references
+    FileManager ..> Product : references
+
+    %% Application Entry Point & Orchestration
+    class Script {
+        +allProducts: Product[]
+        +myCart: Cart
+        +isLoggedIn: boolean
+        +lenis: Lenis
+        +main() void
+        +renderProducts() void
+        +addToCart(productId) void
+        +removeFromCart(productId) void
+        +updateCartUI() void
+        +toggleCart() void
+        +showModal(message) void
+        +handleAuthClick() void
+        -handleCredentialResponse(response) void
+        -parseJwt(token) any
+        -createLeaf(container) void
+    }
+
+    Script "1" *-- "many" Product : instantiates & manages
+    Script "1" *-- "1" Cart : instantiates & controls
+    Script ..> ModeManager : uses theme/shake APIs
+    Script ..> FileManager : uses to save receipts
