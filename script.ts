@@ -1,6 +1,9 @@
 import { Product, Beverage, FoodItem } from './classes/Product';
 import { Cart } from './classes/Cart';
 import { ModeManager } from './classes/ModeManager';
+import { auth, googleProvider, db } from './firebase';
+import { signInWithPopup, onAuthStateChanged, signOut } from 'firebase/auth';
+import { collection, getDocs, setDoc, doc, getDoc, onSnapshot } from 'firebase/firestore';
 
 // Type definitions for global variables or external libraries
 declare const google: any;
@@ -8,21 +11,63 @@ declare class Lenis {
     raf(time: number): void;
 }
 
-const allProducts: Product[] = [
-    // Day Menu
-    new Beverage("D1", "Zo's Morning Brew", 120, "Day", 50, "/assets/UnderDevelopmentImage.png", "Regular", true),
-    new Beverage("D2", "Zo's Iced Matcha Latte", 160, "Day", 30, "/assets/UnderDevelopmentImage.png", "Large", false),
-    new FoodItem("F1", "Zo's Avocado Toast", 180, "Day", 20, "/assets/UnderDevelopmentImage.png", "Vegan"),
+let allProducts: Product[] = [];
 
-    // Night Menu
-    new Beverage("N1", "Zo's Midnight Espresso", 140, "Night", 40, "/assets/UnderDevelopmentImage.png", "Small", true),
-    new Beverage("N2", "Zo's Chamomile Tea", 110, "Night", 25, "/assets/UnderDevelopmentImage.png", "Regular", true),
-    new FoodItem("F2", "Zo's Dark Chocolate Cake", 150, "Night", 20, "/assets/UnderDevelopmentImage.png", "Vegetarian"),
+// Seed the database if no products are found
+async function loadProductsFromFirestore() {
+    const productsRef = collection(db, "products");
+    const snapshot = await getDocs(productsRef);
+    
+    if (snapshot.empty) {
+        console.log("No products found in Firestore. Seeding initial data...");
+        const initialProducts = [
+            // Day Menu
+            new Beverage("D1", "Zo's Morning Brew", 120, "Day", 50, "/assets/UnderDevelopmentImage.png", "Regular", true),
+            new Beverage("D2", "Zo's Iced Matcha Latte", 160, "Day", 30, "/assets/UnderDevelopmentImage.png", "Large", false),
+            new FoodItem("F1", "Zo's Avocado Toast", 180, "Day", 20, "/assets/UnderDevelopmentImage.png", "Vegan"),
 
-    // Both
-    new Beverage("B1", "Zo's Signature Latte", 150, "Both", 100, "/assets/UnderDevelopmentImage.png", "Regular", true),
-    new FoodItem("B2", "Zo's Blueberry Muffin", 110, "Both", 30, "/assets/UnderDevelopmentImage.png", "Normal")
-];
+            // Night Menu
+            new Beverage("N1", "Zo's Midnight Espresso", 140, "Night", 40, "/assets/UnderDevelopmentImage.png", "Small", true),
+            new Beverage("N2", "Zo's Chamomile Tea", 110, "Night", 25, "/assets/UnderDevelopmentImage.png", "Regular", true),
+            new FoodItem("F2", "Zo's Dark Chocolate Cake", 150, "Night", 20, "/assets/UnderDevelopmentImage.png", "Vegetarian"),
+
+            // Both
+            new Beverage("B1", "Zo's Signature Latte", 150, "Both", 100, "/assets/UnderDevelopmentImage.png", "Regular", true),
+            new FoodItem("B2", "Zo's Blueberry Muffin", 110, "Both", 30, "/assets/UnderDevelopmentImage.png", "Normal")
+        ];
+
+        for (const prod of initialProducts) {
+            let data: any = {
+                id: prod.getProductId(),
+                name: prod.getName(),
+                price: prod.getPrice(),
+                mode: prod.getMode(),
+                stock: prod.getStock(),
+                image: prod.getImage(),
+                type: prod instanceof Beverage ? 'Beverage' : 'FoodItem'
+            };
+            if (prod instanceof Beverage) {
+                data.size = prod.getSize();
+                data.isHot = prod.getIsHot();
+            } else if (prod instanceof FoodItem) {
+                data.dietType = prod.getDietType();
+            }
+            await setDoc(doc(db, "products", prod.getProductId()), data);
+            allProducts.push(prod);
+        }
+    } else {
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            if (data.type === 'Beverage') {
+                allProducts.push(new Beverage(data.id, data.name, data.price, data.mode, data.stock, data.image, data.size, data.isHot));
+            } else {
+                allProducts.push(new FoodItem(data.id, data.name, data.price, data.mode, data.stock, data.image, data.dietType));
+            }
+        });
+    }
+    
+    renderProducts();
+}
 
 const myCart = new Cart("C1", "GUEST_1");
 
@@ -57,21 +102,107 @@ export function renderProducts(): void {
                     <span class="price">₱${product.getPrice().toFixed(2)}</span>
                     <span class="type">${isDrink ? ((product as Beverage).getIsHot() ? 'Hot' : 'Iced') : (product as FoodItem).getDietType()}</span>
                 </div>
-                <button onclick="addToCart('${product.getProductId()}')">Add to Cart</button>
+                <div class="add-to-cart-wrapper">
+                    <div class="qty-selector">
+                        <button class="qty-btn" onclick="decrementQty('${product.getProductId()}')">-</button>
+                        <span class="qty-display" id="qty-${product.getProductId()}">1</span>
+                        <button class="qty-btn" onclick="incrementQty('${product.getProductId()}')">+</button>
+                    </div>
+                    <button style="margin-top:0;" onclick="addToCart('${product.getProductId()}')">Add to Cart</button>
+                </div>
             </div>
         `;
         targetGrid.appendChild(itemDiv);
     });
 }
 
+export class HapticSoundManager {
+    private static ctx: AudioContext | null = null;
+
+    private static init() {
+        if (!this.ctx) {
+            this.ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        }
+    }
+
+    public static playPop() {
+        try {
+            this.init();
+            if (this.ctx!.state === 'suspended') this.ctx!.resume();
+            const osc = this.ctx!.createOscillator();
+            const gain = this.ctx!.createGain();
+            osc.connect(gain);
+            gain.connect(this.ctx!.destination);
+
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(300, this.ctx!.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(800, this.ctx!.currentTime + 0.05);
+
+            gain.gain.setValueAtTime(1, this.ctx!.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, this.ctx!.currentTime + 0.1);
+
+            osc.start();
+            osc.stop(this.ctx!.currentTime + 0.1);
+        } catch (e) { console.warn('Audio play failed', e); }
+    }
+
+    public static playClick() {
+        try {
+            this.init();
+            if (this.ctx!.state === 'suspended') this.ctx!.resume();
+            const osc = this.ctx!.createOscillator();
+            const gain = this.ctx!.createGain();
+            osc.connect(gain);
+            gain.connect(this.ctx!.destination);
+
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(150, this.ctx!.currentTime);
+            gain.gain.setValueAtTime(0.2, this.ctx!.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, this.ctx!.currentTime + 0.05);
+
+            osc.start();
+            osc.stop(this.ctx!.currentTime + 0.05);
+        } catch (e) { console.warn('Audio play failed', e); }
+    }
+}
+(window as any).HapticSoundManager = HapticSoundManager;
+
+export function incrementQty(productId: string): void {
+    HapticSoundManager.playClick();
+    const qtySpan = document.getElementById(`qty-${productId}`);
+    if (qtySpan) {
+        let currentQty = parseInt(qtySpan.textContent || '1');
+        qtySpan.textContent = (currentQty + 1).toString();
+    }
+}
+(window as any).incrementQty = incrementQty;
+
+export function decrementQty(productId: string): void {
+    HapticSoundManager.playClick();
+    const qtySpan = document.getElementById(`qty-${productId}`);
+    if (qtySpan) {
+        let currentQty = parseInt(qtySpan.textContent || '1');
+        if (currentQty > 1) {
+            qtySpan.textContent = (currentQty - 1).toString();
+        }
+    }
+}
+(window as any).decrementQty = decrementQty;
+
 export function addToCart(productId: string): void {
+    HapticSoundManager.playPop();
     const product = allProducts.find(p => p.getProductId() === productId);
+    const qtySpan = document.getElementById(`qty-${productId}`);
+    const quantity = qtySpan ? parseInt(qtySpan.textContent || '1') : 1;
+    
     if (product) {
-        myCart.addItem(product, 1);
+        myCart.addItem(product, quantity);
+        if (qtySpan) qtySpan.textContent = '1';
     }
 }
 
 export function removeFromCart(productId: string): void {
+    HapticSoundManager.playClick();
     myCart.removeItem(productId);
 }
 
@@ -105,7 +236,34 @@ export function updateCartUI(): void {
         container.appendChild(div);
     });
 
-    totalAmount.textContent = myCart.total.toFixed(2);
+    const discountSection = document.getElementById('token-discount-section');
+    const useTokensCheckbox = document.getElementById('use-tokens-checkbox') as HTMLInputElement;
+    const applicableTokensSpan = document.getElementById('applicable-tokens');
+    const applicableDiscountSpan = document.getElementById('applicable-discount');
+    
+    let displayTotal = myCart.total;
+
+    if (isLoggedIn && currentUserTokens > 0) {
+        if (discountSection) discountSection.style.display = 'block';
+        const applicableTokens = Math.min(currentUserTokens, Math.floor(myCart.total));
+        
+        if (applicableTokensSpan) applicableTokensSpan.textContent = applicableTokens.toString();
+        if (applicableDiscountSpan) applicableDiscountSpan.textContent = applicableTokens.toString();
+        
+        if (isApplyingTokens && applicableTokens > 0) {
+            if (useTokensCheckbox) useTokensCheckbox.checked = true;
+            displayTotal = Math.max(0, myCart.total - applicableTokens);
+        } else {
+            isApplyingTokens = false;
+            if (useTokensCheckbox) useTokensCheckbox.checked = false;
+        }
+    } else {
+        if (discountSection) discountSection.style.display = 'none';
+        isApplyingTokens = false;
+        if (useTokensCheckbox) useTokensCheckbox.checked = false;
+    }
+
+    totalAmount.textContent = displayTotal.toFixed(2);
     
     const cartBadge = document.getElementById('cart-badge');
     if (cartBadge) {
@@ -115,9 +273,19 @@ export function updateCartUI(): void {
 }
 
 export function toggleCart(): void {
+    HapticSoundManager.playClick();
     const sidebar = document.getElementById('cart-sidebar');
     if (sidebar) sidebar.classList.toggle('open');
 }
+
+export function toggleTokens(): void {
+    const cb = document.getElementById('use-tokens-checkbox') as HTMLInputElement;
+    if (cb) {
+        isApplyingTokens = cb.checked;
+        updateCartUI();
+    }
+}
+(window as any).toggleTokens = toggleTokens;
 
 export function showModal(message: string): void {
     const modal = document.getElementById('shake-modal');
@@ -131,11 +299,13 @@ export function showModal(message: string): void {
     }, 2000);
 }
 
-let isLoggedIn = false;
+export let isLoggedIn = false;
+export let currentUserTokens = 0;
+export let isApplyingTokens = false;
 
 document.addEventListener('DOMContentLoaded', () => {
     ModeManager.applyTheme();
-    renderProducts();
+    loadProductsFromFirestore(); // Replaced renderProducts with async loader
 
     const overlay = document.getElementById('intro-overlay');
     if (overlay) {
@@ -158,7 +328,136 @@ document.addEventListener('DOMContentLoaded', () => {
     if (closeCartBtn) closeCartBtn.addEventListener('click', toggleCart);
     
     const checkoutBtn = document.getElementById('checkout-btn');
-    if (checkoutBtn) checkoutBtn.addEventListener('click', () => myCart.checkout());
+    const checkoutModal = document.getElementById('checkout-modal');
+    const cancelCheckoutBtn = document.getElementById('cancel-checkout-btn');
+    const checkoutForm = document.getElementById('checkout-form') as HTMLFormElement;
+
+    if (checkoutBtn) {
+        checkoutBtn.addEventListener('click', () => {
+            if (myCart.items.length === 0) {
+                alert("Cart is empty!");
+                return;
+            }
+            if (checkoutModal) checkoutModal.classList.remove('hidden');
+        });
+    }
+
+    if (cancelCheckoutBtn) {
+        cancelCheckoutBtn.addEventListener('click', () => {
+            if (checkoutModal) checkoutModal.classList.add('hidden');
+        });
+    }
+
+    // Dynamic field toggles
+    const orderTypeRadios = document.querySelectorAll('input[name="orderType"]');
+    orderTypeRadios.forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            const val = (e.target as HTMLInputElement).value;
+            const dineinFields = document.getElementById('dinein-fields');
+            const pickupFields = document.getElementById('pickup-fields');
+            if (val === 'dinein') {
+                if (dineinFields) dineinFields.style.display = 'block';
+                if (pickupFields) pickupFields.style.display = 'none';
+            } else {
+                if (dineinFields) dineinFields.style.display = 'none';
+                if (pickupFields) pickupFields.style.display = 'block';
+            }
+        });
+    });
+
+    let paypalButtonsRendered = false;
+
+    const paymentTypeRadios = document.querySelectorAll('input[name="paymentType"]');
+    paymentTypeRadios.forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            const val = (e.target as HTMLInputElement).value;
+            const paypalFields = document.getElementById('paypal-fields');
+            const confirmBtn = document.getElementById('confirm-checkout-btn');
+
+            if (val === 'cash') {
+                if (paypalFields) paypalFields.style.display = 'none';
+                if (confirmBtn) confirmBtn.style.display = 'block';
+            } else {
+                if (paypalFields) paypalFields.style.display = 'block';
+                if (confirmBtn) confirmBtn.style.display = 'none';
+
+                if (!paypalButtonsRendered && (window as any).paypal) {
+                    paypalButtonsRendered = true;
+                    (window as any).paypal.Buttons({
+                        createOrder: function(data: any, actions: any) {
+                            let finalTotal = myCart.total;
+                            if (isApplyingTokens) {
+                                finalTotal = Math.max(0, finalTotal - currentUserTokens);
+                            }
+                            
+                            return actions.order.create({
+                                purchase_units: [{
+                                    amount: {
+                                        currency_code: 'PHP',
+                                        value: finalTotal.toFixed(2)
+                                    }
+                                }]
+                            });
+                        },
+                        onApprove: function(data: any, actions: any) {
+                            return actions.order.capture().then(function(details: any) {
+                                alert('Transaction completed by ' + details.payer.name.given_name);
+                                
+                                const checkoutForm = document.getElementById('checkout-form') as HTMLFormElement;
+                                const formData = new FormData(checkoutForm);
+                                const checkoutData = {
+                                    orderType: formData.get('orderType') as string,
+                                    tableNo: Math.floor(Math.random() * 50) + 1,
+                                    guests: 1,
+                                    pickupTime: (document.getElementById('pickup-time') as HTMLInputElement)?.value || '',
+                                    paymentType: 'paypal',
+                                    cashTender: 0,
+                                    cardNo: details.id,
+                                    downloadReceipt: (document.getElementById('download-receipt') as HTMLInputElement)?.checked || false
+                                };
+                                
+                                myCart.finalizeCheckout(checkoutData);
+                                
+                                const checkoutModal = document.getElementById('checkout-modal');
+                                if (checkoutModal) checkoutModal.classList.add('hidden');
+                            });
+                        }
+                    }).render('#paypal-button-container');
+                }
+            }
+        });
+    });
+
+    const pickupTimeInput = document.getElementById('pickup-time') as HTMLInputElement;
+    if (pickupTimeInput) {
+        pickupTimeInput.addEventListener('click', () => {
+            const now = new Date();
+            const hours = ('0' + now.getHours()).slice(-2);
+            const minutes = ('0' + now.getMinutes()).slice(-2);
+            pickupTimeInput.min = `${hours}:${minutes}`;
+        });
+    }
+
+    if (checkoutForm) {
+        checkoutForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(checkoutForm);
+            const data = {
+                orderType: formData.get('orderType') as string,
+                tableNo: Math.floor(Math.random() * 50) + 1,
+                guests: 1,
+                pickupTime: (document.getElementById('pickup-time') as HTMLInputElement)?.value || '',
+                paymentType: formData.get('paymentType') as string,
+                cashTender: myCart.total,
+                cardNo: '',
+                downloadReceipt: (document.getElementById('download-receipt') as HTMLInputElement)?.checked || false
+            };
+            
+            myCart.finalizeCheckout(data);
+            if (checkoutModal) checkoutModal.classList.add('hidden');
+        });
+    }
 
     // TRIPLE CLICK LOGO TO CHANGE THEME/MENU
     let logoClicks = 0;
@@ -214,18 +513,79 @@ document.addEventListener('DOMContentLoaded', () => {
         ModeManager.detectShake();
     }
 
-    (window as any).onload = function () {
-        if ((window as any).google) {
-            google.accounts.id.initialize({
-                client_id: "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com",
-                callback: handleCredentialResponse
+    let tokenUnsub: (() => void) | null = null;
+
+    // Initialize Firebase Auth listener
+    onAuthStateChanged(auth, async (user) => {
+        const displayImg = document.getElementById('display-img') as HTMLImageElement;
+        const defaultIcon = document.getElementById('default-user-icon');
+        const authLabel = document.getElementById('auth-label');
+        const logoutBtn = document.getElementById('logout-btn');
+        const tokenPromo = document.getElementById('token-promo');
+
+        if (user) {
+            isLoggedIn = true;
+            if (logoutBtn) logoutBtn.style.display = 'inline';
+            if (tokenPromo) tokenPromo.style.display = 'none';
+
+            if (displayImg && user.photoURL && defaultIcon) {
+                displayImg.src = user.photoURL;
+                displayImg.style.display = 'block';
+                defaultIcon.style.display = 'none';
+                displayImg.classList.add('logged-in');
+            }
+
+            // Check and setup user document in Firestore
+            const userRef = doc(db, 'users', user.uid);
+            const userSnap = await getDoc(userRef);
+
+            if (!userSnap.exists()) {
+                await setDoc(userRef, {
+                    name: user.displayName,
+                    email: user.email,
+                    tokens: 0
+                });
+            } else {
+                // Ensure they at least have the tokens field
+                if (userSnap.data().tokens === undefined) {
+                    await setDoc(userRef, { tokens: 0 }, { merge: true });
+                }
+            }
+
+            // Listen for token updates
+            tokenUnsub = onSnapshot(userRef, (docSnap) => {
+                if (docSnap.exists() && authLabel) {
+                    const data = docSnap.data();
+                    currentUserTokens = data.tokens || 0;
+                    authLabel.textContent = `Tokens: ${currentUserTokens}`;
+                    updateCartUI();
+                }
             });
-            google.accounts.id.renderButton(
-                document.getElementById("auth-container"),
-                { theme: "outline", size: "large", type: "icon", shape: "circle" }
-            );
+
+        } else {
+            isLoggedIn = false;
+            currentUserTokens = 0;
+            isApplyingTokens = false;
+            updateCartUI();
+            
+            if (logoutBtn) logoutBtn.style.display = 'none';
+            if (tokenPromo) tokenPromo.style.display = 'block';
+
+            if (tokenUnsub) {
+                tokenUnsub();
+                tokenUnsub = null;
+            }
+            if (displayImg && defaultIcon) {
+                displayImg.src = "";
+                displayImg.style.display = 'none';
+                defaultIcon.style.display = 'block';
+                displayImg.classList.remove('logged-in');
+            }
+            if (authLabel) {
+                authLabel.textContent = 'Login';
+            }
         }
-    }
+    });
 });
 
 function createLeaf(container: HTMLElement): void {
@@ -243,30 +603,24 @@ function createLeaf(container: HTMLElement): void {
     container.appendChild(leaf);
 }
 
-export function handleAuthClick(): void {
-    if (!isLoggedIn && (window as any).google) {
-        google.accounts.id.prompt();
-    }
-};
-
-function handleCredentialResponse(response: any): void {
-    const responsePayload = parseJwt(response.credential);
-    const displayImg = document.getElementById('display-img') as HTMLImageElement;
-
-    isLoggedIn = true;
-    if (displayImg) {
-        displayImg.src = responsePayload.picture;
-        displayImg.classList.add('logged-in');
+export async function handleLogin(): Promise<void> {
+    if (!isLoggedIn) {
+        try {
+            await signInWithPopup(auth, googleProvider);
+        } catch (error) {
+            console.error("Error signing in with Google:", error);
+        }
     }
 }
 
-function parseJwt(token: string): any {
-    var base64Url = token.split('.')[1];
-    var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-    }).join(''));
-    return JSON.parse(jsonPayload);
+export async function handleLogout(): Promise<void> {
+    if (isLoggedIn) {
+        try {
+            await signOut(auth);
+        } catch (error) {
+            console.error("Error signing out:", error);
+        }
+    }
 }
 
 window.addEventListener('scroll', () => {
@@ -296,4 +650,5 @@ requestAnimationFrame(raf);
 (window as any).toggleCart = toggleCart;
 (window as any).updateCartUI = updateCartUI;
 (window as any).showModal = showModal;
-(window as any).handleAuthClick = handleAuthClick;
+(window as any).handleLogin = handleLogin;
+(window as any).handleLogout = handleLogout;
