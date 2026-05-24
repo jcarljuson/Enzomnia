@@ -19,6 +19,7 @@ export class FileManager {
 ====================================
 Order ID: ${order.getOrderId()}
 Date: ${new Date().toLocaleString()}
+${(order as any).tableNo ? `Table No: ${(order as any).tableNo}` : ((order as any).pickupTime ? `Pickup Time: ${(order as any).pickupTime}` : '')}
 ------------------------------------
 ITEMS:
 ${items.map(item => `- ${item}`).join('\n')}
