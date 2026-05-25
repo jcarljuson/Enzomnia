@@ -40,22 +40,4 @@ TOTAL AMOUNT: ₱${order.totalAmount.toFixed(2)}
         
         URL.revokeObjectURL(link.href);
     }
-
-    /**
-     * TRANSACTION: Serializing Inventory data to a JSON file
-     * Converts a list of Product objects into a structured JSON backup.
-     */
-    public static exportInventory(products: Product[]): void {
-        const jsonData = JSON.stringify(products, null, 2);
-        const blob = new Blob([jsonData], { type: 'application/json' });
-        
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = 'inventory_backup.json';
-        
-        console.log(`[File System] Backing up inventory to: inventory_backup.json`);
-        link.click();
-        
-        URL.revokeObjectURL(link.href);
-    }
 }

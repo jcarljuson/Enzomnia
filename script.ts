@@ -1,6 +1,7 @@
 import { Product, Beverage, FoodItem } from './classes/Product';
 import { Cart } from './classes/Cart';
 import { ModeManager } from './classes/ModeManager';
+import { User, GuestUser, RegisteredUser } from './classes/User';
 import { auth, googleProvider, db } from './firebase';
 import { signInWithPopup, onAuthStateChanged, signOut } from 'firebase/auth';
 import { collection, getDocs, setDoc, doc, getDoc, onSnapshot } from 'firebase/firestore';
@@ -102,13 +103,22 @@ export function renderProducts(): void {
                     <span class="price">₱${product.getPrice().toFixed(2)}</span>
                     <span class="type">${isDrink ? ((product as Beverage).getIsHot() ? 'Hot' : 'Iced') : (product as FoodItem).getDietType()}</span>
                 </div>
-                <div class="add-to-cart-wrapper">
-                    <div class="qty-selector">
-                        <button class="qty-btn" onclick="decrementQty('${product.getProductId()}')">-</button>
-                        <span class="qty-display" id="qty-${product.getProductId()}">1</span>
-                        <button class="qty-btn" onclick="incrementQty('${product.getProductId()}')">+</button>
+                <div class="add-to-cart-wrapper" style="flex-direction: column; gap: 8px; align-items: stretch;">
+                    <div style="display: flex; gap: 8px; width: 100%;">
+                        <div class="qty-selector">
+                            <button class="qty-btn" onclick="decrementQty('${product.getProductId()}')">-</button>
+                            <span class="qty-display" id="qty-${product.getProductId()}">1</span>
+                            <button class="qty-btn" onclick="incrementQty('${product.getProductId()}')">+</button>
+                        </div>
+                        <button style="margin-top:0; flex: 1; display: flex; align-items: center; justify-content: center;" onclick="addToCart('${product.getProductId()}')" title="Add to Cart">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="9" cy="21" r="1"></circle>
+                                <circle cx="20" cy="21" r="1"></circle>
+                                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                            </svg>
+                        </button>
                     </div>
-                    <button style="margin-top:0;" onclick="addToCart('${product.getProductId()}')">Add to Cart</button>
+                    <button class="buy-now-btn" style="margin-top:0; width: 100%;" onclick="buyNow('${product.getProductId()}')">Buy Now</button>
                 </div>
             </div>
         `;
@@ -204,6 +214,12 @@ export function addToCart(productId: string): void {
 export function removeFromCart(productId: string): void {
     HapticSoundManager.playClick();
     myCart.removeItem(productId);
+}
+
+export function buyNow(productId: string): void {
+    addToCart(productId);
+    const checkoutModal = document.getElementById('checkout-modal');
+    if (checkoutModal) checkoutModal.classList.remove('hidden');
 }
 
 // UI functions are exported to window at the end of the file
@@ -302,6 +318,7 @@ export function showModal(message: string): void {
 export let isLoggedIn = false;
 export let currentUserTokens = 0;
 export let isApplyingTokens = false;
+export let currentUser: User = new GuestUser("GUEST_1", "Guest", "", "", "session_" + Date.now());
 
 document.addEventListener('DOMContentLoaded', () => {
     ModeManager.applyTheme();
@@ -525,6 +542,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (user) {
             isLoggedIn = true;
+            currentUser = new RegisteredUser(user.uid, user.displayName || "User", user.email || "", "", "Day");
+            
             if (logoutBtn) logoutBtn.style.display = 'inline';
             if (tokenPromo) tokenPromo.style.display = 'none';
 
@@ -564,6 +583,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } else {
             isLoggedIn = false;
+            currentUser = new GuestUser("GUEST_1", "Guest", "", "", "session_" + Date.now());
             currentUserTokens = 0;
             isApplyingTokens = false;
             updateCartUI();
@@ -646,6 +666,7 @@ requestAnimationFrame(raf);
 // Export functions to global scope for HTML/other modules
 (window as any).renderProducts = renderProducts;
 (window as any).addToCart = addToCart;
+(window as any).buyNow = buyNow;
 (window as any).removeFromCart = removeFromCart;
 (window as any).toggleCart = toggleCart;
 (window as any).updateCartUI = updateCartUI;

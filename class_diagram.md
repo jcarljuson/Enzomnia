@@ -187,7 +187,6 @@ classDiagram
     %% File Management System
     class FileManager {
         +saveReceipt(order, items) void
-        +exportInventory(products) void
     }
 
     FileManager ..> Order : references
