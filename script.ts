@@ -144,15 +144,18 @@ export class HapticSoundManager {
             osc.connect(gain);
             gain.connect(this.ctx!.destination);
 
+            // A pleasant, round, organic "pop" sound
             osc.type = 'sine';
-            osc.frequency.setValueAtTime(300, this.ctx!.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(800, this.ctx!.currentTime + 0.05);
+            osc.frequency.setValueAtTime(400, this.ctx!.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(600, this.ctx!.currentTime + 0.05);
 
-            gain.gain.setValueAtTime(1, this.ctx!.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, this.ctx!.currentTime + 0.1);
+            // Much softer volume with a quick, smooth decay to avoid clipping clicks
+            gain.gain.setValueAtTime(0, this.ctx!.currentTime);
+            gain.gain.linearRampToValueAtTime(0.3, this.ctx!.currentTime + 0.01);
+            gain.gain.exponentialRampToValueAtTime(0.001, this.ctx!.currentTime + 0.1);
 
-            osc.start();
-            osc.stop(this.ctx!.currentTime + 0.1);
+            osc.start(this.ctx!.currentTime);
+            osc.stop(this.ctx!.currentTime + 0.15);
         } catch (e) { console.warn('Audio play failed', e); }
     }
 
@@ -165,12 +168,16 @@ export class HapticSoundManager {
             osc.connect(gain);
             gain.connect(this.ctx!.destination);
 
-            osc.type = 'square';
-            osc.frequency.setValueAtTime(150, this.ctx!.currentTime);
-            gain.gain.setValueAtTime(0.2, this.ctx!.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, this.ctx!.currentTime + 0.05);
+            // A gentle, subtle, high-pitched "tick" or "blip"
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(800, this.ctx!.currentTime);
+            
+            // Very soft volume, almost imperceptible attack/decay
+            gain.gain.setValueAtTime(0, this.ctx!.currentTime);
+            gain.gain.linearRampToValueAtTime(0.1, this.ctx!.currentTime + 0.005);
+            gain.gain.exponentialRampToValueAtTime(0.001, this.ctx!.currentTime + 0.04);
 
-            osc.start();
+            osc.start(this.ctx!.currentTime);
             osc.stop(this.ctx!.currentTime + 0.05);
         } catch (e) { console.warn('Audio play failed', e); }
     }
@@ -208,6 +215,7 @@ export function addToCart(productId: string): void {
     if (product) {
         myCart.addItem(product, quantity);
         if (qtySpan) qtySpan.textContent = '1';
+        showToast(`${quantity}x ${product.getName()} successfully added to cart`);
     }
 }
 
@@ -313,6 +321,22 @@ export function showModal(message: string): void {
     setTimeout(() => {
         modal.classList.add('hidden');
     }, 2000);
+}
+
+export function showToast(message: string): void {
+    const toast = document.getElementById('toast');
+    if (!toast) return;
+    toast.textContent = message;
+    toast.classList.add('show');
+    
+    // Clear any existing timeout so it doesn't close prematurely if clicked rapidly
+    if ((window as any).toastTimeout) {
+        clearTimeout((window as any).toastTimeout);
+    }
+    
+    (window as any).toastTimeout = setTimeout(() => {
+        toast.classList.remove('show');
+    }, 3000);
 }
 
 export let isLoggedIn = false;
