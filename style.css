@@ -518,7 +518,8 @@ body.night-mode .qty-btn:hover {
     top: 0;
     right: -400px;
     width: 350px;
-    height: 100vh;
+    height: 100%; /* Fallback */
+    height: 100dvh; /* Modern viewport height fixing address bar issues */
     background: #fff;
     box-shadow: -4px 0 25px rgba(0,0,0,0.1);
     transition: right 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), background-color 0.4s ease, color 0.4s ease;
@@ -573,6 +574,7 @@ body.night-mode .qty-btn:hover {
 
 .cart-footer {
     padding: 25px;
+    padding-bottom: calc(25px + env(safe-area-inset-bottom));
     border-top: 1px solid #eee;
     transition: border-color 0.4s ease;
 }
