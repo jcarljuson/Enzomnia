@@ -697,3 +697,4 @@ requestAnimationFrame(raf);
 (window as any).showModal = showModal;
 (window as any).handleLogin = handleLogin;
 (window as any).handleLogout = handleLogout;
+ 

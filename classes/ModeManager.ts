@@ -84,3 +84,4 @@ export class ModeManager {
         return products.filter(p => p.getMode() === mode || p.getMode() === 'Both');
     }
 }
+ 

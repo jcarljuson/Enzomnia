@@ -56,3 +56,4 @@ export class PickupOrder extends Order {
         this.qrCode = "QR_" + this.getOrderId();
     }
 }
+ 

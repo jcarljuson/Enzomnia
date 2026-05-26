@@ -35,3 +35,4 @@ TOTAL AMOUNT: ₱${order.totalAmount.toFixed(2)}
         URL.revokeObjectURL(link.href);
     }
 }
+ 

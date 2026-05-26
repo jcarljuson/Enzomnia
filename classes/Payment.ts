@@ -43,3 +43,4 @@ export class CashPayment extends Payment {
         return true;
     }
 }
+ 

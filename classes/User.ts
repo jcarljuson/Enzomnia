@@ -42,3 +42,4 @@ export class RegisteredUser extends User {
         return true;
     }
 }
+ 

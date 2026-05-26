@@ -51,3 +51,4 @@ export class FoodItem extends Product {
 
     public getDietType(): string { return this.dietType; }
 }
+ 
