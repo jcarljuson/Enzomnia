@@ -4,13 +4,13 @@ import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyApmyVUyBm38nB2IxIwzOXGqTirAkD7gLo",
-  authDomain: "enzomnia-f6386.firebaseapp.com",
-  projectId: "enzomnia-f6386",
-  storageBucket: "enzomnia-f6386.firebasestorage.app",
-  messagingSenderId: "567819993725",
-  appId: "1:567819993725:web:250285725372657b53a714",
-  measurementId: "G-H7BNS86YZR"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
 // Initialize Firebase
