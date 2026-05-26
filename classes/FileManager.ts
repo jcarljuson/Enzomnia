@@ -1,10 +1,16 @@
 import { Product } from './Product';
 import { Order } from './Order';
 
-/*
-Handles file transactions for the Enzomnia Cafe system.
-writes a human-readable Receipt to a .txt file
-*/
+/**
+ * FileManager Class
+ * Handles file transactions for the Enzomnia Cafe system.
+ * Demonstrates serialization and file stream handling in a web environment.
+ */
+export class FileManager {
+    /**
+     * TRANSACTION: Writing a human-readable Receipt to a .txt file
+     * This creates a Blob and triggers a browser download to simulate file writing.
+     */
     public static saveReceipt(order: Order, items: string[]): void {
         const receiptContent = `
 ====================================
@@ -35,4 +41,3 @@ TOTAL AMOUNT: ₱${order.totalAmount.toFixed(2)}
         URL.revokeObjectURL(link.href);
     }
 }
- 
