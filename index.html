@@ -46,8 +46,8 @@
                     </svg>
                     <span id="cart-badge" class="cart-badge" style="display: none;">0</span>
                 </div>
-                <div id="auth-container" class="flex items-center gap-[12px] cursor-pointer">
-                    <div id="profile-target" class="w-[38px] h-[38px] bg-white rounded-full flex items-center justify-center overflow-hidden border border-black/10 transition-all duration-[400ms] dark:bg-[#1e2a22] dark:border-white/20" onclick="handleLogin()">
+                <div id="auth-container" class="flex items-center gap-[12px] cursor-pointer relative">
+                    <div id="profile-target" class="w-[38px] h-[38px] bg-white rounded-full flex items-center justify-center overflow-hidden border border-black/10 transition-all duration-[400ms] dark:bg-[#1e2a22] dark:border-white/20" onclick="handleProfileClick()">
                         <svg id="default-user-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                             <circle cx="12" cy="7" r="4"></circle>
@@ -57,6 +57,14 @@
                     <div class="flex flex-col items-start max-sm:hidden">
                         <span id="auth-label" class="text-[0.85rem] font-extrabold text-[#1e3932] transition-colors duration-[400ms] cursor-pointer dark:text-white" onclick="handleLogin()">Login</span>
                         <span id="logout-btn" style="display: none; cursor: pointer;" onclick="handleLogout()">Logout</span>
+                    </div>
+                    <!-- Profile Mobile Popup -->
+                    <div id="profile-popup" class="hidden absolute top-[50px] right-0 bg-white dark:bg-[#1e2a22] shadow-[0_20px_40px_rgba(0,0,0,0.2)] rounded-[15px] p-[15px] flex-col w-[160px] border border-black/10 dark:border-white/10 z-[2000]">
+                        <div class="flex items-center justify-between mb-[10px] pb-[10px] border-b border-black/10 dark:border-white/10">
+                            <span class="font-bold text-[#1e3932] dark:text-[#eaf4f0] text-[0.9rem]">Tokens:</span>
+                            <span id="popup-tokens" class="font-extrabold text-[#d68a27] dark:text-[#55d699] text-[0.9rem]">0</span>
+                        </div>
+                        <span onclick="handleLogout(); document.getElementById('profile-popup').classList.add('hidden')" class="font-bold text-[0.9rem] tracking-wider cursor-pointer transition-colors duration-300 hover:bg-[#ffebee] dark:hover:bg-[#4a1c1c] text-[#d9534f] py-[10px] px-[10px] rounded-[8px] text-center">LOGOUT</span>
                     </div>
                 </div>
             </div>
@@ -132,7 +140,7 @@
         <div class="modal-content checkout-content premium bg-white text-[#121212] dark:bg-[#16201a] dark:text-[#eaf4f0] p-[25px] rounded-[20px] w-[92%] max-w-[420px] max-h-[90vh] overflow-y-auto text-left shadow-[0_30px_60px_rgba(0,0,0,0.15)] dark:shadow-[0_30px_60px_rgba(0,0,0,0.5)]">
             <div class="checkout-header text-center mb-[30px]">
                 <h2 class="text-[1.8rem] mb-[5px]">Complete Your Order</h2>
-                <p>Customize your experience</p>
+
             </div>
             
             <form id="checkout-form">
