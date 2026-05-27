@@ -1,6 +1,6 @@
 import { Product } from './Product';
 
-// Declare functions used in script.js
+// functions from script
 declare function renderProducts(): void;
 declare function showModal(msg: string): void;
 
@@ -14,7 +14,7 @@ export class ModeManager {
 
     public static toggleMode(): void {
         const now = Date.now();
-        if (now - this.lastToggle < 2000) return; // Prevent rapid-fire toggling
+        if (now - this.lastToggle < 2000) return; // prevent spam clicking
         this.lastToggle = now;
 
         this.currentMode = this.currentMode === 'Day' ? 'Night' : 'Day';
@@ -45,8 +45,8 @@ export class ModeManager {
         let lastZ: number | null = null;
         let lastTime = Date.now();
         let shakeStartTime: number | null = null;
-        const shakeThreshold = 60; // Moderate threshold since duration is now the main filter
-        const requiredDuration = 2000; // 2 seconds of continuous shaking
+        const shakeThreshold = 60; // how hard to shake
+        const requiredDuration = 2000; // shake for 2 secs
 
         window.addEventListener('devicemotion', (e: DeviceMotionEvent) => {
             const current = e.accelerationIncludingGravity;
@@ -65,10 +65,10 @@ export class ModeManager {
                             shakeStartTime = currentTime;
                         } else if (currentTime - shakeStartTime > requiredDuration) {
                             this.toggleMode();
-                            shakeStartTime = null; // Reset after successful toggle
+                            shakeStartTime = null; // reset timer
                         }
                     } else {
-                        // Reset if the shaking intensity drops
+                        // reset if they stop shaking
                         shakeStartTime = null;
                     }
                 }
