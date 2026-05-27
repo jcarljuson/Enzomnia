@@ -614,6 +614,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     const data = docSnap.data();
                     currentUserTokens = data.tokens || 0;
                     authLabel.textContent = `Tokens: ${currentUserTokens}`;
+                    
+                    const popupTokens = document.getElementById('popup-tokens');
+                    if (popupTokens) popupTokens.textContent = currentUserTokens.toString();
+                    
                     updateCartUI();
                 }
             });
@@ -674,8 +678,29 @@ export async function handleLogout(): Promise<void> {
     if (isLoggedIn) {
         try {
             await signOut(auth);
+            const popup = document.getElementById('profile-popup');
+            if (popup) popup.classList.add('hidden');
         } catch (error) {
             console.error("Error signing out:", error);
+        }
+    }
+}
+
+export function handleProfileClick(): void {
+    if (!isLoggedIn) {
+        handleLogin();
+    } else {
+        if (window.innerWidth <= 640) {
+            const popup = document.getElementById('profile-popup');
+            if (popup) {
+                if (popup.classList.contains('hidden')) {
+                    popup.classList.remove('hidden');
+                    popup.style.display = 'flex';
+                } else {
+                    popup.classList.add('hidden');
+                    popup.style.display = 'none';
+                }
+            }
         }
     }
 }
@@ -711,4 +736,5 @@ requestAnimationFrame(raf);
 (window as any).showModal = showModal;
 (window as any).handleLogin = handleLogin;
 (window as any).handleLogout = handleLogout;
+(window as any).handleProfileClick = handleProfileClick;
  
