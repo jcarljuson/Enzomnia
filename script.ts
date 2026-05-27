@@ -6,7 +6,7 @@ import { auth, googleProvider, db } from './firebase';
 import { signInWithPopup, onAuthStateChanged, signOut } from 'firebase/auth';
 import { collection, getDocs, setDoc, doc, getDoc, onSnapshot } from 'firebase/firestore';
 
-// Type definitions for global variables or external libraries
+// global vars from other files
 declare const google: any;
 declare class Lenis {
     raf(time: number): void;
@@ -14,7 +14,7 @@ declare class Lenis {
 
 let allProducts: Product[] = [];
 
-// Seed the database if no products are found
+// add products if db is empty
 async function loadProductsFromFirestore() {
     const productsRef = collection(db, "products");
     const snapshot = await getDocs(productsRef);
@@ -72,7 +72,7 @@ async function loadProductsFromFirestore() {
 
 const myCart = new Cart("C1", "GUEST_1");
 
-// --- UI Logic ---
+// UI stuff
 
 export function renderProducts(): void {
     const drinksGrid = document.getElementById('drinks-grid');
@@ -90,35 +90,34 @@ export function renderProducts(): void {
         const targetGrid = isDrink ? drinksGrid : pastriesGrid;
 
         const itemDiv = document.createElement('div');
-        itemDiv.className = 'item';
+        // bg-[#eef2f5] dark:bg-[#191e1cc9] rounded-[24px] shadow-[0_4px_20px_rgba(0,0,0,0.04)] dark:shadow-none border border-black/5 dark:border-white/5 flex flex-col p-[20px] text-center relative mt-[80px] transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(30,57,50,0.1)] dark:hover:shadow-[0_20px_40px_rgba(0,0,0,0.5)] dark:backdrop-blur-[10px]
+        itemDiv.className = 'item bg-[#eef2f5] dark:bg-[#16201acc] rounded-[24px] shadow-[0_4px_20px_rgba(0,0,0,0.04)] dark:shadow-none border border-black/5 dark:border-white/5 flex flex-col p-[20px] text-center relative mt-[80px] transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(30,57,50,0.1)] dark:hover:shadow-[0_20px_40px_rgba(0,0,0,0.5)] dark:backdrop-blur-[10px]';
         itemDiv.innerHTML = `
             <div class="mode-badge mode-${product.getMode().toLowerCase()}">${product.getMode()}</div>
-            <div class="item-img-container">
-                <img src="${product.getImage()}" alt="${product.getName()}">
+            <div class="item-img-container relative w-full -mt-[90px] flex justify-center items-end mb-[15px]">
+                <img src="${product.getImage()}" alt="${product.getName()}" class="h-[180px] w-auto max-w-full object-contain drop-shadow-[0_15px_15px_rgba(0,0,0,0.15)] transition-transform duration-400 z-[2] group-hover:-translate-y-[10px] group-hover:scale-105">
             </div>
-            <div class="item-content">
-                <h3>${product.getName()}</h3>
-                <div class="divider"></div>
-                <div class="item-meta">
-                    <span class="price">₱${product.getPrice().toFixed(2)}</span>
-                    <span class="type">${isDrink ? ((product as Beverage).getIsHot() ? 'Hot' : 'Iced') : (product as FoodItem).getDietType()}</span>
+            <div class="item-content flex flex-col flex-1 justify-end">
+                <h3 class="m-0 mb-[5px] font-['Plus_Jakarta_Sans'] text-[1.4rem] font-extrabold text-[#2b3a55] dark:text-[#eaf4f0] transition-colors duration-[1500ms]">${product.getName()}</h3>
+                <div class="item-meta flex justify-between items-center mb-[20px]">
+                    <span class="type text-[0.95rem] text-[#444] dark:text-[#9bb3a6] font-semibold transition-colors duration-[1500ms]">${isDrink ? ((product as Beverage).getIsHot() ? 'Hot' : 'Iced') : (product as FoodItem).getDietType()}</span>
+                    <span class="price font-bold text-[1.2rem] text-[#1e3932] dark:text-[#3bbd81] transition-colors duration-[1500ms]">₱${product.getPrice().toFixed(2)}</span>
                 </div>
-                <div class="add-to-cart-wrapper" style="flex-direction: column; gap: 8px; align-items: stretch;">
-                    <div style="display: flex; gap: 8px; width: 100%;">
-                        <div class="qty-selector">
-                            <button class="qty-btn" onclick="decrementQty('${product.getProductId()}')">-</button>
-                            <span class="qty-display" id="qty-${product.getProductId()}">1</span>
-                            <button class="qty-btn" onclick="incrementQty('${product.getProductId()}')">+</button>
-                        </div>
-                        <button style="margin-top:0; flex: 1; display: flex; align-items: center; justify-content: center;" onclick="addToCart('${product.getProductId()}')" title="Add to Cart">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="9" cy="21" r="1"></circle>
-                                <circle cx="20" cy="21" r="1"></circle>
-                                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-                            </svg>
-                        </button>
+                <div class="divider h-[1px] bg-black/10 dark:bg-white/10 my-[15px] w-full transition-colors duration-[1500ms]"></div>
+                <div class="add-to-cart-wrapper flex gap-[8px] items-center justify-between mt-[15px]">
+                    <div class="qty-selector flex items-center border border-[#eaeaea] dark:border-[#23332a] rounded-[8px] p-0 mr-[10px] h-[36px] bg-[#f9f9f9] dark:bg-[#1e2a22] shrink-0">
+                        <button class="qty-btn bg-transparent border-none py-[5px] px-[12px] text-inherit min-w-auto m-0 text-[1.2rem] cursor-pointer shadow-none transform-none hover:bg-black/5 dark:hover:bg-white/10" onclick="decrementQty('${product.getProductId()}')">-</button>
+                        <span class="qty-display px-[10px] font-semibold min-w-[20px] text-center text-[1.1rem]" id="qty-${product.getProductId()}">1</span>
+                        <button class="qty-btn bg-transparent border-none py-[5px] px-[12px] text-inherit min-w-auto m-0 text-[1.2rem] cursor-pointer shadow-none transform-none hover:bg-black/5 dark:hover:bg-white/10" onclick="incrementQty('${product.getProductId()}')">+</button>
                     </div>
-                    <button class="buy-now-btn" style="margin-top:0; width: 100%;" onclick="buyNow('${product.getProductId()}')">Buy Now</button>
+                    <button class="add-btn bg-[#e8f5e9] dark:bg-transparent text-[#1e3932] dark:text-[#3bbd81] border border-[#1e3932] dark:border-[#3bbd81] p-[10px] rounded-[20px] flex items-center justify-center cursor-pointer font-semibold transition-all duration-200 flex-1 hover:bg-[#1e3932] hover:text-white dark:hover:bg-[#3bbd81] dark:hover:text-[#ffffff]" onclick="addToCart('${product.getProductId()}')" title="Add to Cart">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="9" cy="21" r="1"></circle>
+                            <circle cx="20" cy="21" r="1"></circle>
+                            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                        </svg>
+                    </button>
+                    <button class="buy-now-btn bg-[#1e3932] dark:bg-[#2b8a5d] text-white dark:text-[#ffffff] font-extrabold uppercase tracking-[0.05em] border border-[#1e3932] dark:border-[#2b8a5d] p-[10px] rounded-[20px] cursor-pointer transition-all duration-200 flex-1 hover:bg-[#132722] hover:-translate-y-[2px] hover:shadow-[0_5px_15px_rgba(30,57,50,0.3)] dark:hover:bg-[#1e6e49] dark:hover:shadow-[0_5px_15px_rgba(43,138,93,0.3)]" onclick="buyNow('${product.getProductId()}')">Buy</button>
                 </div>
             </div>
         `;
@@ -144,12 +143,12 @@ export class HapticSoundManager {
             osc.connect(gain);
             gain.connect(this.ctx!.destination);
 
-            // A pleasant, round, organic "pop" sound
+            // pop sound for buttons
             osc.type = 'sine';
             osc.frequency.setValueAtTime(400, this.ctx!.currentTime);
             osc.frequency.exponentialRampToValueAtTime(600, this.ctx!.currentTime + 0.05);
 
-            // Much softer volume with a quick, smooth decay to avoid clipping clicks
+            // make it quiet so it doesnt hurt ears
             gain.gain.setValueAtTime(0, this.ctx!.currentTime);
             gain.gain.linearRampToValueAtTime(0.3, this.ctx!.currentTime + 0.01);
             gain.gain.exponentialRampToValueAtTime(0.001, this.ctx!.currentTime + 0.1);
@@ -168,11 +167,11 @@ export class HapticSoundManager {
             osc.connect(gain);
             gain.connect(this.ctx!.destination);
 
-            // A gentle, subtle, high-pitched "tick" or "blip"
+            // small tick sound
             osc.type = 'sine';
             osc.frequency.setValueAtTime(800, this.ctx!.currentTime);
             
-            // Very soft volume, almost imperceptible attack/decay
+            // very quiet tick
             gain.gain.setValueAtTime(0, this.ctx!.currentTime);
             gain.gain.linearRampToValueAtTime(0.1, this.ctx!.currentTime + 0.005);
             gain.gain.exponentialRampToValueAtTime(0.001, this.ctx!.currentTime + 0.04);
@@ -224,13 +223,25 @@ export function removeFromCart(productId: string): void {
     myCart.removeItem(productId);
 }
 
+export function updateCartQuantity(productId: string, change: number): void {
+    HapticSoundManager.playClick();
+    const item = myCart.items.find(i => i.getProduct().getProductId() === productId);
+    if (item) {
+        if (item.getQuantity() + change <= 0) {
+            myCart.removeItem(productId);
+        } else {
+            myCart.addItem(item.getProduct(), change); // addItem adds to existing qty and updates UI
+        }
+    }
+}
+
 export function buyNow(productId: string): void {
     addToCart(productId);
     const checkoutModal = document.getElementById('checkout-modal');
     if (checkoutModal) checkoutModal.classList.remove('hidden');
 }
 
-// UI functions are exported to window at the end of the file
+// export for html
 
 export function updateCartUI(): void {
     const container = document.getElementById('cart-items-container');
@@ -246,15 +257,17 @@ export function updateCartUI(): void {
     myCart.items.forEach(item => {
         totalItems += item.getQuantity();
         const div = document.createElement('div');
-        div.className = 'cart-item';
+        div.className = 'cart-item flex justify-between items-center mb-[20px] pb-[20px] border-b border-[#eee] dark:border-[#23332a] transition-colors duration-[400ms]';
         div.innerHTML = `
             <div class="cart-item-info">
-                <h4>${item.getProduct().getName()}</h4>
-                <p>₱${item.getProduct().getPrice().toFixed(2)} x ${item.getQuantity()}</p>
-                <button class="remove-btn" onclick="removeFromCart('${item.getProduct().getProductId()}')">Remove</button>
+                <h4 class="m-0 mb-[5px] text-[1.1rem]">${item.getProduct().getName()} (x${item.getQuantity()})</h4>
+                <p class="m-0 text-[0.9rem] text-[#666] dark:text-[#9bb3a6] transition-colors duration-[400ms]">₱${item.calcTotal().toFixed(2)}</p>
+                <button class="remove-btn bg-none border-none text-[#d9534f] cursor-pointer text-[0.85rem] py-[5px] px-0 mt-[5px] font-semibold" onclick="removeFromCart('${item.getProduct().getProductId()}')">Remove</button>
             </div>
-            <div class="cart-item-total">
-                <strong>₱${item.calcTotal().toFixed(2)}</strong>
+            <div class="qty-selector flex items-center border border-[#eaeaea] dark:border-[#23332a] rounded-[8px] p-0 mr-[10px] h-[36px] bg-[#f9f9f9] dark:bg-[#1e2a22] shrink-0">
+                <button class="qty-btn bg-transparent border-none py-[5px] px-[12px] text-inherit min-w-auto m-0 text-[1.2rem] cursor-pointer shadow-none transform-none hover:bg-black/5 dark:hover:bg-white/10" onclick="updateCartQuantity('${item.getProduct().getProductId()}', -1)">-</button>
+                <span class="qty-display px-[10px] font-semibold min-w-[20px] text-center text-[1.1rem]">${item.getQuantity()}</span>
+                <button class="qty-btn bg-transparent border-none py-[5px] px-[12px] text-inherit min-w-auto m-0 text-[1.2rem] cursor-pointer shadow-none transform-none hover:bg-black/5 dark:hover:bg-white/10" onclick="updateCartQuantity('${item.getProduct().getProductId()}', 1)">+</button>
             </div>
         `;
         container.appendChild(div);
@@ -329,7 +342,7 @@ export function showToast(message: string): void {
     toast.textContent = message;
     toast.classList.add('show');
     
-    // Clear any existing timeout so it doesn't close prematurely if clicked rapidly
+    // stop the timer so it doesnt glitch
     if ((window as any).toastTimeout) {
         clearTimeout((window as any).toastTimeout);
     }
@@ -360,7 +373,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 100);
     }
 
-    // Mode button is now handled via logo triple-click or shake
+    // changed to triple click instead of button
     
     const cartToggleBtn = document.getElementById('cart-toggle-btn');
     if (cartToggleBtn) cartToggleBtn.addEventListener('click', toggleCart);
@@ -389,7 +402,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Dynamic field toggles
+    // show or hide inputs based on choice
     const orderTypeRadios = document.querySelectorAll('input[name="orderType"]');
     orderTypeRadios.forEach(radio => {
         radio.addEventListener('change', (e) => {
@@ -500,7 +513,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // TRIPLE CLICK LOGO TO CHANGE THEME/MENU
+    // click logo 3 times to change theme
     let logoClicks = 0;
     let logoTimer: any;
     let isLocked = false;
@@ -511,10 +524,10 @@ document.addEventListener('DOMContentLoaded', () => {
             e.stopPropagation();
             if (isLocked) return;
 
-            // Visual feedback pulse
-            logoContainer.style.transform = 'translate(-50%, -50%) scale(0.9)';
+            // make logo pulse
+            logoContainer.style.scale = '0.9';
             setTimeout(() => {
-                logoContainer.style.transform = 'translate(-50%, -50%) scale(1)';
+                logoContainer.style.scale = '1';
             }, 100);
 
             logoClicks++;
@@ -532,14 +545,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // GYROSCOPE SHAKE DETECTION (iOS requires a user gesture like a click)
+    // shake to change theme (ios needs click first)
     if (typeof DeviceMotionEvent !== 'undefined' && typeof (DeviceMotionEvent as any).requestPermission === 'function') {
         document.body.addEventListener('click', function req() {
-            // Kickstart video for iOS
+            // fix video autoplay on iphone
             const video = document.getElementById('hero-video') as HTMLVideoElement;
             if (video) {
                 video.play().catch(() => {
-                    // If it still fails (e.g. Low Power Mode), we just ignore
+                    // ignore if low power mode
                 });
             }
 
@@ -556,7 +569,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let tokenUnsub: (() => void) | null = null;
 
-    // Initialize Firebase Auth listener
+    // check if user is logged in
     onAuthStateChanged(auth, async (user) => {
         const displayImg = document.getElementById('display-img') as HTMLImageElement;
         const defaultIcon = document.getElementById('default-user-icon');
@@ -578,7 +591,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 displayImg.classList.add('logged-in');
             }
 
-            // Check and setup user document in Firestore
+            // get user data from db
             const userRef = doc(db, 'users', user.uid);
             const userSnap = await getDoc(userRef);
 
@@ -589,13 +602,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     tokens: 0
                 });
             } else {
-                // Ensure they at least have the tokens field
+                // make sure token field exists
                 if (userSnap.data().tokens === undefined) {
                     await setDoc(userRef, { tokens: 0 }, { merge: true });
                 }
             }
 
-            // Listen for token updates
+            // update tokens when it changes
             tokenUnsub = onSnapshot(userRef, (docSnap) => {
                 if (docSnap.exists() && authLabel) {
                     const data = docSnap.data();
@@ -677,7 +690,7 @@ window.addEventListener('scroll', () => {
     }
 });
 
-// Using Lenis to make the scrolling smoother and better user experience
+// smooth scrolling
 const lenis = new (window as any).Lenis();
 
 function raf(time: number): void {
@@ -687,11 +700,12 @@ function raf(time: number): void {
 
 requestAnimationFrame(raf);
 
-// Export functions to global scope for HTML/other modules
+// export functions for html
 (window as any).renderProducts = renderProducts;
 (window as any).addToCart = addToCart;
 (window as any).buyNow = buyNow;
 (window as any).removeFromCart = removeFromCart;
+(window as any).updateCartQuantity = updateCartQuantity;
 (window as any).toggleCart = toggleCart;
 (window as any).updateCartUI = updateCartUI;
 (window as any).showModal = showModal;
