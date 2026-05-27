@@ -6,7 +6,7 @@ import { FileManager } from './FileManager';
 import { db, auth } from '../firebase';
 import { collection, setDoc, doc, updateDoc, increment } from 'firebase/firestore';
 
-// Define globally used functions to avoid compilation errors if they are not yet defined
+// global functions
 declare function updateCartUI(): void;
 declare function toggleCart(): void;
 
@@ -98,7 +98,7 @@ export class Cart {
 
         if (payment.process()) {
             try {
-                // Save order to Firestore
+                // save to db
                 const orderData: any = {
                     orderId: order.getOrderId(),
                     customerName: order.getCustomerName(),
@@ -129,10 +129,10 @@ export class Cart {
                 await setDoc(doc(db, "orders", orderId), orderData);
                 console.log("Order saved to Firestore:", orderId);
 
-                // Reward/Deduct tokens if user is logged in
+                // handle loyalty tokens
                 const user = auth.currentUser;
                 if (user) {
-                    const tokensEarned = Math.floor(finalAmountPaid / 50); // 1 token per 50 spent
+                    const tokensEarned = Math.floor(finalAmountPaid / 50); // 1 point for every 50 pesos
                     const netTokens = tokensEarned - tokensRedeemed;
                     if (netTokens !== 0) {
                         const userRef = doc(db, 'users', user.uid);
