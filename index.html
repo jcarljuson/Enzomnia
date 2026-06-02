@@ -269,8 +269,8 @@
             <div id="zoe-character-container" class="absolute bottom-[0px] left-1/2 -translate-x-1/2 w-[160px] md:w-[200px] flex flex-col items-center justify-end z-30 pointer-events-none transition-[bottom] duration-[1000ms] ease-[cubic-bezier(0.165,0.84,0.44,1)]">
                 
                 <!-- AI Bubble (Nested so it moves with the character) -->
-                <div id="zoe-ai-bubble" class="absolute top-[-300px] md:top-[-400px] left-1/2 -translate-x-1/2 md:translate-x-0 md:left-[calc(50%+90px)] max-w-[90vw] md:max-w-[320px] min-w-[200px] md:min-w-[150px] w-max opacity-0 transition-opacity duration-300 flex flex-col items-start z-40 mb-[5px]">
-                    <div class="bg-gradient-to-br from-[#1e3932] to-[#132722] dark:from-[#3bbd81] dark:to-[#2b8a5d] px-[18px] py-[14px] rounded-[20px] rounded-bl-[6px] text-[1rem] text-white shadow-lg font-bold relative inline-block text-left leading-relaxed border border-white/10 zoe-speech-left">
+                <div id="zoe-ai-bubble" class="absolute bottom-[380px] top-auto md:bottom-auto md:top-[-400px] left-1/2 -translate-x-1/2 md:translate-x-0 md:left-[calc(50%+90px)] max-w-[90vw] md:max-w-[320px] min-w-[200px] md:min-w-[150px] max-h-[35vh] md:max-h-none overflow-y-auto no-scrollbar w-max opacity-0 transition-opacity duration-300 flex flex-col items-center md:items-start z-40 mb-[5px]">
+                    <div class="bg-gradient-to-br from-[#1e3932] to-[#132722] dark:from-[#3bbd81] dark:to-[#2b8a5d] px-[18px] py-[14px] rounded-[20px] rounded-bl-[6px] md:rounded-bl-[6px] text-[1rem] text-white shadow-lg font-bold relative inline-block text-center md:text-left leading-relaxed border border-white/10 zoe-speech-left">
                         <div class="typing-indicator flex gap-[4px] items-center h-[10px] mt-[4px]" id="zoe-typing">
                             <span class="w-[6px] h-[6px] bg-white rounded-full animate-bounce" style="animation-delay: 0s;"></span>
                             <span class="w-[6px] h-[6px] bg-white rounded-full animate-bounce" style="animation-delay: 0.15s;"></span>
@@ -282,10 +282,18 @@
 
                 <!-- Video Container -->
                 <div id="zoe-video-container" class="absolute bottom-0 w-[200px] h-[200px] md:w-[250px] md:h-[250px] z-30 pointer-events-auto flex items-end justify-center cursor-pointer" title="Click to chat with Zo" onclick="zoeGreet()">
-                    <video id="zoe-vid-idle" src="/assets/Animation/idle.webm" autoplay loop muted playsinline class="absolute inset-0 w-full h-full object-contain opacity-0 scale-[2.8] translate-y-[120px] origin-bottom"></video>
-                    <video id="zoe-vid-talking" src="/assets/Animation/talking.webm" preload="auto" muted playsinline class="absolute inset-0 w-full h-full object-contain opacity-0 scale-[2.8] translate-y-[120px] origin-bottom"></video>
-                    <video id="zoe-vid-greeting" src="/assets/Animation/greeting%20flow.webm" preload="auto" muted playsinline class="absolute inset-0 w-full h-full object-contain opacity-0 scale-[2.8] translate-y-[120px] origin-bottom"></video>
-                    <video id="zoe-vid-thinking" src="/assets/Animation/thinking.webm" autoplay loop muted playsinline class="absolute inset-0 w-full h-full object-contain opacity-0 scale-[2.8] translate-y-[120px] origin-bottom"></video>
+                    <video id="zoe-vid-idle" autoplay loop muted playsinline class="absolute inset-0 w-full h-full object-contain opacity-0 scale-[2.8] translate-y-[120px] origin-bottom">
+                        <source src="/assets/Animation/idle.webm" type="video/webm">
+                    </video>
+                    <video id="zoe-vid-talking" preload="auto" muted playsinline class="absolute inset-0 w-full h-full object-contain opacity-0 scale-[2.8] translate-y-[120px] origin-bottom">
+                        <source src="/assets/Animation/talking.webm" type="video/webm">
+                    </video>
+                    <video id="zoe-vid-greeting" preload="auto" muted playsinline class="absolute inset-0 w-full h-full object-contain opacity-0 scale-[2.8] translate-y-[120px] origin-bottom">
+                        <source src="/assets/Animation/greeting%20flow.webm" type="video/webm">
+                    </video>
+                    <video id="zoe-vid-thinking" autoplay loop muted playsinline class="absolute inset-0 w-full h-full object-contain opacity-0 scale-[2.8] translate-y-[120px] origin-bottom">
+                        <source src="/assets/Animation/thinking.webm" type="video/webm">
+                    </video>
                 </div>
             </div>
         </div>
