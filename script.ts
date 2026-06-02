@@ -465,6 +465,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 
                 vid.parentNode?.replaceChild(img, vid);
+
+                // Reassign the global video references so setAnimationState works correctly
+                if (id === 'zoe-vid-idle') videos.idle = img as any;
+                if (id === 'zoe-vid-talking') videos.talking = img as any;
+                if (id === 'zoe-vid-greeting') videos.greeting = img as any;
+                if (id === 'zoe-vid-thinking') videos.thinking = img as any;
             }
         });
     }
