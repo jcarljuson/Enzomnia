@@ -423,23 +423,6 @@ document.addEventListener('DOMContentLoaded', () => {
     ModeManager.applyTheme();
     loadProductsFromFirestore(); // Replaced renderProducts with async loader
 
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
-    if (isIOS) {
-        const ids = ['zoe-vid-idle', 'zoe-vid-talking', 'zoe-vid-greeting', 'zoe-vid-thinking'];
-        ids.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) {
-                const img = document.createElement('img');
-                img.id = el.id;
-                img.className = el.className;
-                img.src = el.querySelector('source')?.getAttribute('src')?.replace('.webm', '.gif') || '';
-                (img as any).play = async () => {};
-                (img as any).pause = () => {};
-                el.parentNode?.replaceChild(img, el);
-            }
-        });
-    }
-
     const overlay = document.getElementById('intro-overlay');
     if (overlay) {
         const leafCount = 25;
