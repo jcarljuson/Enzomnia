@@ -423,13 +423,50 @@ document.addEventListener('DOMContentLoaded', () => {
     ModeManager.applyTheme();
     loadProductsFromFirestore(); // Replaced renderProducts with async loader
 
-    // iOS Safari strips WebM alpha. Apply screen blend mode to the container so it blends the black background against the body.
+    // iOS Safari has catastrophic bugs with WebM alpha and mix-blend-mode.
+    // We fall back to Animated WebP which has native transparency on iOS 14+.
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
     if (isIOS) {
-        const container = document.getElementById('zoe-video-container');
-        if (container) {
-            container.style.mixBlendMode = 'screen';
-        }
+        const ids = ['zoe-vid-idle', 'zoe-vid-talking', 'zoe-vid-greeting', 'zoe-vid-thinking'];
+        ids.forEach(id => {
+            const vid = document.getElementById(id) as HTMLVideoElement;
+            if (vid) {
+                const img = document.createElement('img');
+                img.id = id;
+                img.className = vid.className;
+                
+                // Polyfill video methods so the rest of the script doesn't break
+                (img as any).play = function() {
+                    // Force restart animation for greeting
+                    if (this.src.includes('greeting')) {
+                        const url = new URL(this.src, window.location.href);
+                        url.searchParams.set('t', Date.now().toString());
+                        this.src = url.toString();
+                    }
+                    return Promise.resolve();
+                };
+                (img as any).pause = function() {};
+                
+                const originalAddEventListener = img.addEventListener.bind(img);
+                (img as any).addEventListener = function(event: string, callback: any, options: any) {
+                    if (event === 'ended') {
+                        // The greeting video is 10 seconds long
+                        setTimeout(callback, 10000);
+                    } else {
+                        originalAddEventListener(event, callback, options);
+                    }
+                };
+
+                const sourceElement = vid.querySelector('source');
+                if (sourceElement) {
+                    let src = sourceElement.src;
+                    src = src.replace('_vp9.webm', '_ios.webp').replace('.webm', '_ios.webp');
+                    img.src = src;
+                }
+                
+                vid.parentNode?.replaceChild(img, vid);
+            }
+        });
     }
 
     const overlay = document.getElementById('intro-overlay');
