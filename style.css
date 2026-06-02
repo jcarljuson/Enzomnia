@@ -3,6 +3,12 @@
 @custom-variant dark (&:is(.night-mode *));
 @custom-variant dark-hover (&:is(.night-mode *):hover);
 
+html, body {
+    overflow-x: hidden;
+    width: 100%;
+    position: relative;
+}
+
 #intro-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: #f9fbf9; z-index: 2000; pointer-events: none;

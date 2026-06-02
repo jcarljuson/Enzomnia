@@ -975,6 +975,9 @@ document.addEventListener('DOMContentLoaded', () => {
                                     suggestions = suggestions.slice(0, numSuggestions);
                                     
                                     zoeSuggestionCards.innerHTML = '';
+                                    const isMobile = window.innerWidth < 768;
+                                    const spread = isMobile ? '95%' : '155%';
+                                    
                                     suggestions.forEach((prod, index) => {
                                         const card = document.createElement('div');
                                         
@@ -982,7 +985,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                         
                                         if (suggestions.length === 3) {
                                             if (index === 0) {
-                                                card.style.transform = 'translateX(-155%) rotateY(15deg) scale(0.9)';
+                                                card.style.transform = `translateX(-${spread}) rotateY(15deg) scale(0.9)`;
                                                 card.style.zIndex = '10';
                                                 card.style.opacity = '0.7';
                                             } else if (index === 1) {
@@ -990,7 +993,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                                 card.style.zIndex = '30';
                                                 card.style.opacity = '1';
                                             } else if (index === 2) {
-                                                card.style.transform = 'translateX(155%) rotateY(-15deg) scale(0.9)';
+                                                card.style.transform = `translateX(${spread}) rotateY(-15deg) scale(0.9)`;
                                                 card.style.zIndex = '10';
                                                 card.style.opacity = '0.7';
                                             }
@@ -1013,9 +1016,9 @@ document.addEventListener('DOMContentLoaded', () => {
                                             
                                             // Keep its position but pop it out
                                             if (suggestions.length === 3) {
-                                                if (index === 0) card.style.transform = 'translateX(-155%) translateZ(60px) scale(1.1)';
+                                                if (index === 0) card.style.transform = `translateX(-${spread}) translateZ(60px) scale(1.1)`;
                                                 if (index === 1) card.style.transform = 'translateZ(80px) scale(1.15)';
-                                                if (index === 2) card.style.transform = 'translateX(155%) translateZ(60px) scale(1.1)';
+                                                if (index === 2) card.style.transform = `translateX(${spread}) translateZ(60px) scale(1.1)`;
                                             } else {
                                                 card.style.transform = 'translateZ(60px) scale(1.15)';
                                             }
@@ -1024,9 +1027,9 @@ document.addEventListener('DOMContentLoaded', () => {
                                             Array.from(zoeSuggestionCards.children).forEach((c: any, i) => {
                                                 c.style.filter = 'blur(0)';
                                                 if (suggestions.length === 3) {
-                                                    if (i === 0) { c.style.transform = 'translateX(-155%) rotateY(15deg) scale(0.9)'; c.style.opacity = '0.7'; c.style.zIndex = '10'; }
+                                                    if (i === 0) { c.style.transform = `translateX(-${spread}) rotateY(15deg) scale(0.9)`; c.style.opacity = '0.7'; c.style.zIndex = '10'; }
                                                     if (i === 1) { c.style.transform = 'translateZ(40px) scale(1.05)'; c.style.opacity = '1'; c.style.zIndex = '30'; }
-                                                    if (i === 2) { c.style.transform = 'translateX(155%) rotateY(-15deg) scale(0.9)'; c.style.opacity = '0.7'; c.style.zIndex = '10'; }
+                                                    if (i === 2) { c.style.transform = `translateX(${spread}) rotateY(-15deg) scale(0.9)`; c.style.opacity = '0.7'; c.style.zIndex = '10'; }
                                                 }
                                             });
                                         });
