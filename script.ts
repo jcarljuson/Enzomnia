@@ -423,6 +423,15 @@ document.addEventListener('DOMContentLoaded', () => {
     ModeManager.applyTheme();
     loadProductsFromFirestore(); // Replaced renderProducts with async loader
 
+    // iOS Safari strips WebM alpha. Apply screen blend mode to the container so it blends the black background against the body.
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+    if (isIOS) {
+        const container = document.getElementById('zoe-video-container');
+        if (container) {
+            container.style.mixBlendMode = 'screen';
+        }
+    }
+
     const overlay = document.getElementById('intro-overlay');
     if (overlay) {
         const leafCount = 25;
