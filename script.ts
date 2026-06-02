@@ -324,6 +324,68 @@ export function toggleTokens(): void {
 }
 (window as any).toggleTokens = toggleTokens;
 
+export function toggleZoeModal(): void {
+    HapticSoundManager.playClick();
+    const mainView = document.getElementById('main-scroll-view');
+    const zoeView = document.getElementById('zoe-view');
+    const triggerBtn = document.getElementById('zoe-trigger-btn');
+    
+    if (zoeView && mainView) {
+        if (zoeView.classList.contains('hidden')) {
+            // Open Zoe
+            mainView.classList.add('hidden');
+            zoeView.classList.remove('hidden');
+            zoeView.classList.add('flex');
+            window.scrollTo(0, 0); // Jump to top so header is visible
+            if (triggerBtn) triggerBtn.classList.add('hidden');
+            
+            // Reset pre-chats when reopened
+            const preChats = document.getElementById('zoe-pre-chats');
+            if (preChats) preChats.style.display = 'flex';
+
+            if ((window as any).zoeGreet) {
+                (window as any).zoeGreet();
+            }
+        } else {
+            // Close Zoe
+            zoeView.classList.add('hidden');
+            zoeView.classList.remove('flex');
+            mainView.classList.remove('hidden');
+            if (triggerBtn) triggerBtn.classList.remove('hidden');
+        }
+    }
+}
+(window as any).toggleZoeModal = toggleZoeModal;
+
+export function closeZoeAndScroll(id: string): void {
+    const zoeView = document.getElementById('zoe-view');
+    const mainView = document.getElementById('main-scroll-view');
+    const triggerBtn = document.getElementById('zoe-trigger-btn');
+    
+    if (zoeView && !zoeView.classList.contains('hidden')) {
+        zoeView.classList.add('hidden');
+        zoeView.classList.remove('flex');
+        if (mainView) mainView.classList.remove('hidden');
+        if (triggerBtn) triggerBtn.classList.remove('hidden');
+    }
+    
+    const target = document.getElementById(id);
+    if (target) {
+        target.scrollIntoView({behavior: 'smooth', block: 'start'});
+    }
+}
+(window as any).closeZoeAndScroll = closeZoeAndScroll;
+
+export function sendZoePreChat(text: string): void {
+    const input = document.getElementById('zoe-input') as HTMLInputElement;
+    const form = document.getElementById('zoe-form') as HTMLFormElement;
+    if (input && form) {
+        input.value = text;
+        form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+    }
+}
+(window as any).sendZoePreChat = sendZoePreChat;
+
 export function showModal(message: string): void {
     const modal = document.getElementById('shake-modal');
     if (!modal) return;
@@ -567,6 +629,607 @@ document.addEventListener('DOMContentLoaded', () => {
         ModeManager.detectShake();
     }
 
+    let zoeState = 'initial'; // initial, asked_suggest, suggesting
+    let zoeSuggestedProductNames: string[] = [];
+    let typingInterval: any = null;
+
+    // Helper for talking video
+    let isTalkingVidPlaying = false;
+    function startTalkingVid() {
+        if (isTalkingVidPlaying) return;
+        isTalkingVidPlaying = true;
+        const talkingVid = document.getElementById('zoe-vid-talking') as HTMLVideoElement;
+        const idleVid = document.getElementById('zoe-vid-idle') as HTMLVideoElement;
+        const greetingVid = document.getElementById('zoe-vid-greeting') as HTMLVideoElement;
+        const thinkingVid = document.getElementById('zoe-vid-thinking') as HTMLVideoElement;
+        if (talkingVid && idleVid) {
+            talkingVid.currentTime = 0;
+            talkingVid.play().catch(e => console.error(e));
+            
+            const onPlay = () => {
+                talkingVid.style.opacity = '1';
+                idleVid.style.opacity = '0';
+                if (greetingVid) greetingVid.style.opacity = '0';
+                if (thinkingVid) thinkingVid.style.opacity = '0';
+                talkingVid.removeEventListener('timeupdate', onPlay);
+            };
+            talkingVid.addEventListener('timeupdate', onPlay);
+            
+            const loopCheck = () => {
+                if (talkingVid.currentTime >= 7.12) {
+                    talkingVid.currentTime = 0;
+                }
+            };
+            talkingVid.addEventListener('timeupdate', loopCheck);
+            (talkingVid as any).loopCheck = loopCheck;
+        }
+    }
+
+    function stopTalkingVid() {
+        if (!isTalkingVidPlaying) return;
+        isTalkingVidPlaying = false;
+        const talkingVid = document.getElementById('zoe-vid-talking') as HTMLVideoElement;
+        const idleVid = document.getElementById('zoe-vid-idle') as HTMLVideoElement;
+        const thinkingVid = document.getElementById('zoe-vid-thinking') as HTMLVideoElement;
+        if (talkingVid && idleVid) {
+            if ((talkingVid as any).loopCheck) {
+                talkingVid.removeEventListener('timeupdate', (talkingVid as any).loopCheck);
+            }
+            if (zoeState === 'asked_suggest' && thinkingVid) {
+                thinkingVid.style.opacity = '1';
+                idleVid.style.opacity = '0';
+            } else {
+                idleVid.style.opacity = '1';
+                if (thinkingVid) thinkingVid.style.opacity = '0';
+            }
+            talkingVid.style.opacity = '0';
+            talkingVid.pause();
+        }
+    }
+
+    let currentTypingInterval: any = null;
+    let stopTalkingVidTimeout: any = null;
+    function typeTextEffect(element: HTMLElement, html: string, callback?: () => void, preventTalkingAnim = false, useThinkingAnim = false) {
+        if (currentTypingInterval) {
+            clearInterval(currentTypingInterval);
+        }
+        if (stopTalkingVidTimeout) {
+            clearTimeout(stopTalkingVidTimeout);
+            stopTalkingVidTimeout = null;
+        }
+        element.innerHTML = '';
+        
+        if (useThinkingAnim) {
+            const talkingVid = document.getElementById('zoe-vid-talking') as HTMLVideoElement;
+            const idleVid = document.getElementById('zoe-vid-idle') as HTMLVideoElement;
+            const thinkingVid = document.getElementById('zoe-vid-thinking') as HTMLVideoElement;
+            if (isTalkingVidPlaying) {
+                isTalkingVidPlaying = false;
+                if (talkingVid) {
+                    if ((talkingVid as any).loopCheck) {
+                        talkingVid.removeEventListener('timeupdate', (talkingVid as any).loopCheck);
+                    }
+                    talkingVid.pause();
+                }
+            }
+            if (thinkingVid) thinkingVid.style.opacity = '1';
+            if (idleVid) idleVid.style.opacity = '0';
+            if (talkingVid) talkingVid.style.opacity = '0';
+        } else if (!preventTalkingAnim) {
+            startTalkingVid();
+        }
+        
+        // Split html by <br> only
+        const tokens = html.split(/(<br\s*\/?>)/i);
+
+        let tokenIndex = 0;
+        let charIndex = 0;
+        currentTypingInterval = setInterval(() => {
+            if (tokenIndex >= tokens.length) {
+                clearInterval(currentTypingInterval);
+                currentTypingInterval = null;
+                if (!preventTalkingAnim && !useThinkingAnim) {
+                    stopTalkingVidTimeout = setTimeout(() => {
+                        stopTalkingVid();
+                        stopTalkingVidTimeout = null;
+                    }, 500);
+                }
+                if (callback) callback();
+                return;
+            }
+            
+            const currentToken = tokens[tokenIndex];
+            
+            if (currentToken.toLowerCase().startsWith('<br')) {
+                element.innerHTML += currentToken;
+                tokenIndex++;
+            } else {
+                if (charIndex < currentToken.length) {
+                    element.innerHTML += currentToken[charIndex];
+                    charIndex++;
+                    // Scroll to bottom as it types
+                    const parentBubble = element.parentElement;
+                    if (parentBubble) parentBubble.scrollTop = parentBubble.scrollHeight;
+                } else {
+                    charIndex = 0;
+                    tokenIndex++;
+                }
+            }
+        }, 40); // Adjust typing speed here
+    }
+
+    let hasGreeted = false;
+    (window as any).zoeGreet = function() {
+        if (hasGreeted) return;
+        hasGreeted = true;
+
+        const zoeAiBubble = document.getElementById('zoe-ai-bubble');
+        const zoeAiText = document.getElementById('zoe-ai-text');
+        const typingIndicator = document.getElementById('zoe-typing');
+        const zoeCharacterContainer = document.getElementById('zoe-character-container');
+        const zoeCharacter = document.getElementById('zoe-character-placeholder');
+
+        if (zoeCharacterContainer) {
+            zoeCharacterContainer.classList.remove('bottom-[0px]');
+            zoeCharacterContainer.classList.add('bottom-[0px]');
+        }
+        if (zoeAiBubble) {
+            zoeAiBubble.classList.remove('opacity-0');
+            zoeAiBubble.classList.add('opacity-100');
+        }
+
+        // Handle Video Greeting
+        const idleVid = document.getElementById('zoe-vid-idle') as HTMLVideoElement;
+        const greetingVid = document.getElementById('zoe-vid-greeting') as HTMLVideoElement;
+        
+        let waitTimeForText = 3500;
+
+        if (idleVid && greetingVid) {
+            greetingVid.currentTime = 0;
+            greetingVid.play().catch(e => console.error("Video play blocked:", e));
+            
+            // Wait for the very first frame to actually render on screen before hiding the old video!
+            const onPlay = () => {
+                greetingVid.style.opacity = '1';
+                idleVid.style.opacity = '0';
+                greetingVid.removeEventListener('timeupdate', onPlay);
+            };
+            greetingVid.addEventListener('timeupdate', onPlay);
+            
+            // After video ends (8 seconds), revert to Idle video and enable chat
+            setTimeout(() => {
+                idleVid.style.opacity = '1';
+                greetingVid.style.opacity = '0';
+                
+                // Enable inputs
+                const zoeInput = document.getElementById('zoe-input') as HTMLInputElement;
+                const zoeSubmitBtn = document.getElementById('zoe-submit-btn') as HTMLButtonElement;
+                const preChats = document.getElementById('zoe-pre-chats');
+                
+                if (zoeInput) {
+                    zoeInput.disabled = false;
+                    zoeInput.placeholder = "Ask Zo something...";
+                }
+                if (zoeSubmitBtn) zoeSubmitBtn.disabled = false;
+                
+                if (preChats) {
+                    preChats.classList.remove('opacity-0', 'pointer-events-none');
+                    preChats.classList.add('opacity-100');
+                    const preChatBtns = preChats.querySelectorAll('button');
+                    preChatBtns.forEach(btn => btn.disabled = false);
+                }
+            }, 8000);
+        }
+
+        if (typingIndicator) {
+            typingIndicator.classList.remove('hidden');
+            if (zoeCharacter) zoeCharacter.classList.add('talking');
+            
+            setTimeout(() => {
+                if (zoeCharacter) zoeCharacter.classList.remove('talking');
+                typingIndicator.classList.add('hidden');
+                if (zoeAiText) {
+                    zoeAiText.classList.remove('hidden');
+                    typeTextEffect(zoeAiText, "Hey, I'm Zo! Your AI bartender for Enzomnia! How can I help you today, man?", undefined, true);
+                }
+            }, waitTimeForText);
+        }
+    };
+    
+    const closeSuggestionsBtn = document.getElementById('close-suggestions-btn');
+    if (closeSuggestionsBtn) {
+        closeSuggestionsBtn.addEventListener('click', () => {
+            const zoeSuggestions = document.getElementById('zoe-suggestions');
+            const zoeCharacterContainer = document.getElementById('zoe-character-container');
+            if (zoeSuggestions) {
+                zoeSuggestions.classList.add('hidden');
+                zoeSuggestions.classList.remove('animate-popup');
+            }
+            if (zoeCharacterContainer) {
+                zoeCharacterContainer.classList.remove('bottom-[-180px]');
+                zoeCharacterContainer.classList.add('bottom-[0px]');
+            }
+            zoeState = 'initial'; // Reset state so she can suggest again
+        });
+    }
+
+    const zoeForm = document.getElementById('zoe-form') as HTMLFormElement;
+    if (zoeForm) {
+        zoeForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const zoeInput = document.getElementById('zoe-input') as HTMLInputElement;
+            const zoeHistoryContainer = document.getElementById('zoe-history-container');
+            const zoeAiBubble = document.getElementById('zoe-ai-bubble');
+            const zoeAiText = document.getElementById('zoe-ai-text');
+            const zoeSuggestions = document.getElementById('zoe-suggestions');
+            const zoeSuggestionCards = document.getElementById('zoe-suggestion-cards');
+            const zoeCharacter = document.getElementById('zoe-character-placeholder');
+            const zoeCharacterContainer = document.getElementById('zoe-character-container');
+            const typingIndicator = document.getElementById('zoe-typing');
+
+            const textValue = zoeInput.value.trim();
+            if (textValue === '') return;
+            
+            const lowerText = textValue.toLowerCase();
+
+            // Hide pre-chats once user types something
+            const preChats = document.getElementById('zoe-pre-chats');
+            if (preChats) {
+                preChats.classList.remove('opacity-100');
+                preChats.classList.add('opacity-0', 'pointer-events-none');
+            }
+
+            // 1. Hide suggestions and center the character
+            if (zoeSuggestions) {
+                zoeSuggestions.classList.add('hidden');
+                zoeSuggestions.classList.remove('animate-popup');
+            }
+            if (zoeCharacterContainer) {
+                zoeCharacterContainer.classList.remove('bottom-[-180px]');
+                zoeCharacterContainer.classList.add('bottom-[0px]');
+            }
+
+            // 2. Add User Message to History
+            if (zoeHistoryContainer) {
+                const newMsg = document.createElement('div');
+                newMsg.className = 'w-max max-w-full opacity-0 animate-[fadeIn_0.3s_ease-out_forwards]';
+                newMsg.innerHTML = `
+                    <div class="text-[0.55rem] font-extrabold text-[#1e3932]/60 dark:text-[#9bb3a6]/60 uppercase tracking-[0.2em] mb-[6px] ml-[8px]">You</div>
+                    <div class="bg-white/80 dark:bg-[#1a251e]/80 backdrop-blur-xl border border-white/80 dark:border-white/10 px-[16px] py-[12px] rounded-[24px] rounded-bl-[8px] text-[0.9rem] font-medium text-[#222] dark:text-[#eaf4f0] shadow-[0_8px_20px_rgba(0,0,0,0.06)] relative zoe-speech-left inline-block leading-relaxed">
+                        <span>${textValue}</span>
+                    </div>
+                `;
+                zoeHistoryContainer.appendChild(newMsg);
+                zoeHistoryContainer.scrollTop = zoeHistoryContainer.scrollHeight;
+            }
+            
+            zoeInput.value = '';
+
+            // 3. Show AI typing indicator
+            if (zoeAiBubble) {
+                zoeAiBubble.classList.remove('opacity-0');
+                zoeAiBubble.classList.add('opacity-100');
+            }
+            if (typingIndicator) typingIndicator.classList.remove('hidden');
+            if (zoeAiText) zoeAiText.classList.add('hidden');
+            if (zoeCharacter) zoeCharacter.classList.remove('talking');
+            
+            const idleVid = document.getElementById('zoe-vid-idle') as HTMLVideoElement;
+            const talkingVid = document.getElementById('zoe-vid-talking') as HTMLVideoElement;
+            const thinkingVid = document.getElementById('zoe-vid-thinking') as HTMLVideoElement;
+            if (thinkingVid) thinkingVid.style.opacity = '1';
+            if (idleVid) idleVid.style.opacity = '0';
+            if (talkingVid) {
+                talkingVid.style.opacity = '0';
+                talkingVid.pause();
+                isTalkingVidPlaying = false;
+            }
+
+            // 4. AI Response Logic
+            const apiKeys = [
+                import.meta.env.VITE_GEMINI_API_KEY,
+                import.meta.env.VITE_GEMINI_API_KEY_BACKUP
+            ].filter(Boolean);
+            const hasApiKey = apiKeys.length > 0;
+            
+            // Check if user is agreeing to a suggestion prompt
+            const agreedWords = ['yes', 'yeah', 'yep', 'sure', 'ok', 'okay', 'please', 'do it'];
+            const isAgreed = agreedWords.some(word => lowerText.includes(word));
+            const isAskingAboutEnzomnia = lowerText.includes('what is enzomnia') || lowerText.includes('enzomnia');
+
+            if (zoeState === 'asked_suggest' && isAgreed) {
+                if (typingIndicator) typingIndicator.classList.add('hidden');
+                
+                if (zoeAiText) {
+                    zoeAiText.classList.remove('hidden');
+                    if (zoeCharacter) zoeCharacter.classList.add('talking');
+                    typeTextEffect(zoeAiText, "Awesome! Here are my top picks for you!", () => {
+                        zoeState = 'suggesting';
+
+                        // 5. Drop character down and show suggestions
+                        setTimeout(() => {
+                            if (zoeCharacterContainer) {
+                                zoeCharacterContainer.classList.remove('bottom-[0px]');
+                                zoeCharacterContainer.classList.add('bottom-[-180px]');
+                            }
+                            
+                            setTimeout(() => {
+                                if (zoeSuggestions && zoeSuggestionCards) {
+                                    zoeSuggestions.classList.remove('hidden');
+                                    // Force reflow to restart animation
+                                    void zoeSuggestions.offsetWidth;
+                                    zoeSuggestions.classList.add('animate-popup');
+                                    
+                                    let suggestions: any[] = [];
+                                    if (zoeSuggestedProductNames.length > 0) {
+                                        suggestions = allProducts.filter(p => zoeSuggestedProductNames.includes(p.getName().toLowerCase()));
+                                    }
+                                    
+                                    const shuffled = [...allProducts].sort(() => 0.5 - Math.random());
+                                    for (const p of shuffled) {
+                                        if (suggestions.length >= 3) break;
+                                        if (!suggestions.includes(p)) suggestions.push(p);
+                                    }
+                                    
+                                    const numSuggestions = Math.min(3, allProducts.length);
+                                    suggestions = suggestions.slice(0, numSuggestions);
+                                    
+                                    zoeSuggestionCards.innerHTML = '';
+                                    suggestions.forEach((prod, index) => {
+                                        const card = document.createElement('div');
+                                        
+                                        card.className = 'absolute w-[130px] bg-white/90 dark:bg-[#23332a]/90 backdrop-blur-md border border-white/50 dark:border-white/10 rounded-[16px] p-[12px] pb-[16px] flex flex-col items-center text-center shadow-[0_15px_35px_rgba(0,0,0,0.15)] cursor-pointer transition-all duration-500 ease-[cubic-bezier(0.25,0.8,0.25,1)] hover:!scale-[1.15] hover:!z-50 pointer-events-auto';
+                                        
+                                        if (suggestions.length === 3) {
+                                            if (index === 0) {
+                                                card.style.transform = 'translateX(-155%) rotateY(15deg) scale(0.9)';
+                                                card.style.zIndex = '10';
+                                                card.style.opacity = '0.7';
+                                            } else if (index === 1) {
+                                                card.style.transform = 'translateZ(40px) scale(1.05)';
+                                                card.style.zIndex = '30';
+                                                card.style.opacity = '1';
+                                            } else if (index === 2) {
+                                                card.style.transform = 'translateX(155%) rotateY(-15deg) scale(0.9)';
+                                                card.style.zIndex = '10';
+                                                card.style.opacity = '0.7';
+                                            }
+                                        } else {
+                                            card.style.position = 'relative';
+                                            card.style.margin = '0 10px';
+                                        }
+                                        
+                                        card.addEventListener('mouseenter', () => {
+                                            Array.from(zoeSuggestionCards.children).forEach((c: any, i) => {
+                                                if (c !== card) {
+                                                    c.style.opacity = '0.4';
+                                                    c.style.filter = 'blur(2px)';
+                                                    c.style.zIndex = '5';
+                                                }
+                                            });
+                                            card.style.opacity = '1';
+                                            card.style.filter = 'blur(0)';
+                                            card.style.zIndex = '50';
+                                            
+                                            // Keep its position but pop it out
+                                            if (suggestions.length === 3) {
+                                                if (index === 0) card.style.transform = 'translateX(-155%) translateZ(60px) scale(1.1)';
+                                                if (index === 1) card.style.transform = 'translateZ(80px) scale(1.15)';
+                                                if (index === 2) card.style.transform = 'translateX(155%) translateZ(60px) scale(1.1)';
+                                            } else {
+                                                card.style.transform = 'translateZ(60px) scale(1.15)';
+                                            }
+                                        });
+                                        card.addEventListener('mouseleave', () => {
+                                            Array.from(zoeSuggestionCards.children).forEach((c: any, i) => {
+                                                c.style.filter = 'blur(0)';
+                                                if (suggestions.length === 3) {
+                                                    if (i === 0) { c.style.transform = 'translateX(-155%) rotateY(15deg) scale(0.9)'; c.style.opacity = '0.7'; c.style.zIndex = '10'; }
+                                                    if (i === 1) { c.style.transform = 'translateZ(40px) scale(1.05)'; c.style.opacity = '1'; c.style.zIndex = '30'; }
+                                                    if (i === 2) { c.style.transform = 'translateX(155%) rotateY(-15deg) scale(0.9)'; c.style.opacity = '0.7'; c.style.zIndex = '10'; }
+                                                }
+                                            });
+                                        });
+
+                                        let labelHtml = '';
+                                        if (typeof (prod as any).getIsHot === 'function') {
+                                            const isHot = (prod as any).getIsHot();
+                                            labelHtml = `<span class="absolute top-[-8px] right-[-5px] bg-[#1e3932] dark:bg-[#3bbd81] text-white text-[0.55rem] font-bold uppercase tracking-wider px-[6px] py-[2px] rounded-full shadow-sm z-10">${isHot ? 'Hot' : 'Cold'}</span>`;
+                                        } else if (typeof (prod as any).getDietType === 'function') {
+                                            const dietType = (prod as any).getDietType();
+                                            if (dietType) {
+                                                labelHtml = `<span class="absolute top-[-8px] right-[-5px] bg-[#d68a27] text-white text-[0.55rem] font-bold uppercase tracking-wider px-[6px] py-[2px] rounded-full shadow-sm z-10">${dietType}</span>`;
+                                            }
+                                        }
+
+                                        card.innerHTML = `
+                                            ${labelHtml}
+                                            <img src="${prod.getImage()}" class="w-[60px] h-[60px] object-contain mb-[8px] drop-shadow-md relative z-0">
+                                            <span class="text-[0.75rem] font-bold text-[#1e3932] dark:text-[#eaf4f0] line-clamp-1 w-full overflow-hidden text-ellipsis whitespace-nowrap mb-[2px]" title="${prod.getName()}">${prod.getName()}</span>
+                                            <span class="text-[0.8rem] text-[#d68a27] dark:text-[#3bbd81] font-extrabold tracking-wider">₱${prod.getPrice().toFixed(2)}</span>
+                                            <div class="absolute bottom-[-15px] bg-[#1e3932] dark:bg-[#3bbd81] text-white text-[0.6rem] font-bold uppercase tracking-widest px-[10px] py-[4px] rounded-full shadow-md opacity-0 transition-opacity duration-300 card-btn z-10">Add</div>
+                                        `;
+                                        
+                                        const style = document.createElement('style');
+                                        style.innerHTML = `div:hover > .card-btn { opacity: 1 !important; transform: translateY(-5px); }`;
+                                        card.appendChild(style);
+
+                                        card.onclick = () => {
+                                            addToCart(prod.getProductId());
+                                            showToast(`Added ${prod.getName()} to cart`);
+                                        };
+                                        zoeSuggestionCards.appendChild(card);
+                                    });
+                                }
+                            }, 800); // Wait for character to move down before popping up suggestions
+                        }, 500); // Small pause after typing before dropping down
+                    });
+                }
+            } else if (hasApiKey) {
+                // Call Gemini API
+                try {
+                    const menuItems = allProducts.map(p => p.getName()).join(', ');
+                    const systemPrompt = `You are Zo, the cool, casual, Gen Z male AI Bartender for Enzomnia Cafe. Your role is STRICTLY to talk about Enzomnia Cafe, our menu, and provide friendly conversation. Use modern Gen Z slang naturally (e.g. 'vibes', 'fr', 'no cap', 'sheesh', 'bet') but DO NOT use 'bro' or 'dude'. 
+CRITICAL RULES:
+1. NEVER break character. You are Zo. 
+2. NEVER write code, solve math, or discuss technical topics. 
+3. Our actual menu items are: ${menuItems}. NEVER mention drinks outside this list.
+4. Keep your replies EXTREMELY straightforward and short (1 sentence max).
+5. If the user hasn't shared their mood/needs, actively ask for it by giving them specific options (e.g. "Are you looking for a morning boost, a chill evening vibe, or something refreshing?"). If they already shared their mood/needs, SKIP asking and IMMEDIATELY offer a suggestion by ending your response EXACTLY with: 'Would you like me to suggest a product?'.
+6. WHENEVER you use the phrase 'Would you like me to suggest a product?', you MUST secretly append your top 3 recommended menu items inside a <suggest> tag at the very end of your response. Example: "You need a boost! Would you like me to suggest a product? <suggest>Espresso, Caramel Macchiato, Americano</suggest>"`;
+                    const requestBody = {
+                        system_instruction: { parts: [{ text: systemPrompt }] },
+                        contents: [{ role: "user", parts: [{ text: textValue }] }],
+                        generationConfig: { temperature: 0.8, maxOutputTokens: 1000 }
+                    };
+                    
+                    let data: any = null;
+                    let lastError: any = null;
+                    
+                    for (const currentKey of apiKeys) {
+                        const maxRetries = 2; // Reduce retries so it switches to the next key faster
+                        for (let attempt = 0; attempt < maxRetries; attempt++) {
+                            try {
+                                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${currentKey}`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify(requestBody)
+                                });
+                                
+                                const result = await response.json();
+                                
+                                if (response.ok) {
+                                    data = result;
+                                    break;
+                                } else if (response.status === 429 && attempt < maxRetries - 1) {
+                                    // Rate limited — wait and retry this key once
+                                    const delay = Math.pow(2, attempt + 1) * 1000;
+                                    console.warn(`Rate limited (429). Retrying in ${delay / 1000}s... (attempt ${attempt + 1}/${maxRetries})`);
+                                    await new Promise(r => setTimeout(r, delay));
+                                } else {
+                                    console.error("Gemini API HTTP Error with key:", response.status, result);
+                                    lastError = new Error(result.error?.message || `HTTP ${response.status}`);
+                                    break; // Break retry loop, move to next key
+                                }
+                            } catch (err: any) {
+                                lastError = err;
+                                break; // Break retry loop on network error, move to next key
+                            }
+                        }
+                        if (data) break; // Success! Don't try the next key
+                    }
+                    
+                    if (!data) {
+                        throw lastError || new Error("Failed after retries");
+                    }
+                    
+                    // Hide the typing indicator (bouncing dots) but KEEP character talking while typing
+                    if (typingIndicator) typingIndicator.classList.add('hidden');
+                    
+                    if (data.candidates && data.candidates[0].content) {
+                        let aiResponse = data.candidates[0].content.parts[0].text;
+                        
+                        // Strip out <think> blocks if any
+                        aiResponse = aiResponse.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+                        
+                        // Extract <suggest> tags
+                        const suggestMatch = aiResponse.match(/<suggest>(.*?)<\/suggest>/i);
+                        if (suggestMatch) {
+                            zoeSuggestedProductNames = suggestMatch[1].split(',').map((s: string) => s.trim().toLowerCase());
+                            aiResponse = aiResponse.replace(/<suggest>[\s\S]*?<\/suggest>/gi, '').trim();
+                        }
+                        
+                        aiResponse = aiResponse.replace(/\n/g, '<br>');
+                        
+                        if (zoeAiText) {
+                            zoeAiText.classList.remove('hidden');
+                            const isSuggest = aiResponse.toLowerCase().includes('suggest a product');
+                            
+                            // To guarantee it doesn't name a product early as requested, if it's a suggestion prompt, we force it to be simple.
+                            if (isSuggest) {
+                                // If there are sentences before the question, we could keep them, but to be strictly safe per user request:
+                                aiResponse = "I've got just the thing! Would you like me to suggest a product?";
+                            }
+                            if (zoeCharacter) {
+                                if (isSuggest) {
+                                    zoeCharacter.classList.remove('talking');
+                                } else {
+                                    zoeCharacter.classList.add('talking');
+                                }
+                            }
+                            typeTextEffect(zoeAiText, aiResponse, () => {
+                                // Stop talking animation when typing finishes
+                                if (zoeCharacter) zoeCharacter.classList.remove('talking');
+                                
+                                if (isSuggest) {
+                                    zoeState = 'asked_suggest';
+                                    const preChats = document.getElementById('zoe-pre-chats');
+                                    if (preChats) {
+                                        preChats.innerHTML = `
+                                            <button type="button" class="bg-white/80 dark:bg-[#1a251e]/80 backdrop-blur-md border border-black/10 dark:border-white/10 px-[12px] md:px-[16px] py-[6px] md:py-[8px] rounded-full text-[0.75rem] md:text-[0.85rem] font-semibold text-[#1e3932] dark:text-[#eaf4f0] shadow-[0_4px_15px_rgba(0,0,0,0.05)] hover:-translate-y-[2px] transition-transform cursor-pointer" onclick="sendZoePreChat('Yes')">Yes, please!</button>
+                                            <button type="button" class="bg-white/80 dark:bg-[#1a251e]/80 backdrop-blur-md border border-black/10 dark:border-white/10 px-[12px] md:px-[16px] py-[6px] md:py-[8px] rounded-full text-[0.75rem] md:text-[0.85rem] font-semibold text-[#1e3932] dark:text-[#eaf4f0] shadow-[0_4px_15px_rgba(0,0,0,0.05)] hover:-translate-y-[2px] transition-transform cursor-pointer" onclick="sendZoePreChat('No')">No thanks</button>
+                                        `;
+                                        preChats.classList.remove('opacity-0', 'pointer-events-none');
+                                    }
+                                } else {
+                                    zoeState = 'initial';
+                                    const preChats = document.getElementById('zoe-pre-chats');
+                                    if (preChats) {
+                                        preChats.classList.add('opacity-0', 'pointer-events-none');
+                                    }
+                                }
+                            }, false, isSuggest);
+                        }
+                    } else {
+                        throw new Error("Invalid response");
+                    }
+                } catch (e: any) {
+                    console.error("Gemini API Error:", e);
+                    if (zoeCharacter) zoeCharacter.classList.remove('talking');
+                    if (typingIndicator) typingIndicator.classList.add('hidden');
+                    if (zoeAiText) {
+                        zoeAiText.classList.remove('hidden');
+                        if (zoeCharacter) zoeCharacter.classList.remove('talking');
+                        const errorMsg = e instanceof Error ? e.message : String(e);
+                        
+                        let displayMsg = "Oops, I'm having trouble connecting right now! (" + errorMsg + ") Would you like me to suggest a product anyway?";
+                        if (errorMsg.includes('429')) {
+                            displayMsg = "Woah, we're chatting too fast! We just hit the Google API rate limit (max 15 messages per minute on the free tier). Give me about 60 seconds to catch my breath, but would you like me to suggest a product in the meantime?";
+                        }
+                        
+                        typeTextEffect(zoeAiText, displayMsg, () => {
+                            zoeState = 'asked_suggest';
+                        }, false, true);
+                    }
+                }
+            } else {
+                // Fallback Mock Logic if no API key
+                setTimeout(() => {
+                    if (zoeCharacter) zoeCharacter.classList.remove('talking');
+                    if (typingIndicator) typingIndicator.classList.add('hidden');
+                    
+                    if (isAskingAboutEnzomnia) {
+                        if (zoeAiText) {
+                            zoeAiText.classList.remove('hidden');
+                            if (zoeCharacter) zoeCharacter.classList.remove('talking');
+                            typeTextEffect(zoeAiText, "Enzomnia is a revolutionary cafe that seamlessly blends daytime energy with nighttime relaxation through our dynamic Day & Night modes!<br><br>Would you like me to suggest a product?", () => {
+                                zoeState = 'asked_suggest';
+                            }, false, true);
+                        }
+                    } else {
+                        if (zoeAiText) {
+                            zoeAiText.classList.remove('hidden');
+                            if (zoeCharacter) zoeCharacter.classList.remove('talking');
+                            typeTextEffect(zoeAiText, "Hmm, I see! Would you like me to suggest you a product?", () => {
+                                zoeState = 'asked_suggest';
+                            }, false, true);
+                        }
+                    }
+                }, 1000);
+            }
+        });
+    }
+
     let tokenUnsub: (() => void) | null = null;
 
     // check if user is logged in
@@ -738,3 +1401,10 @@ requestAnimationFrame(raf);
 (window as any).handleLogout = handleLogout;
 (window as any).handleProfileClick = handleProfileClick;
  
+// Magical AI Button Appearance after 10 seconds
+setTimeout(() => {
+    const triggerBtn = document.getElementById('zoe-trigger-btn');
+    if (triggerBtn) {
+        triggerBtn.classList.remove('opacity-0', 'translate-y-[50px]', 'scale-50', 'pointer-events-none');
+    }
+}, 10000);
