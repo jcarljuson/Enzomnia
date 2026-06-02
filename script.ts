@@ -423,17 +423,6 @@ document.addEventListener('DOMContentLoaded', () => {
     ModeManager.applyTheme();
     loadProductsFromFirestore(); // Replaced renderProducts with async loader
 
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
-    if (isIOS) {
-        const ids = ['zoe-vid-idle', 'zoe-vid-talking', 'zoe-vid-greeting', 'zoe-vid-thinking'];
-        ids.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) {
-                el.style.mixBlendMode = 'screen';
-            }
-        });
-    }
-
     const overlay = document.getElementById('intro-overlay');
     if (overlay) {
         const leafCount = 25;
