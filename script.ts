@@ -382,21 +382,36 @@ export function toggleZoeModal(): void {
 
 export function closeZoeAndScroll(id: string): void {
     const zoeView = document.getElementById('zoe-view');
+    const storyView = document.getElementById('story-view');
     const mainView = document.getElementById('main-scroll-view');
     const triggerBtn = document.getElementById('zoe-trigger-btn');
     
+    let viewsChanged = false;
+
     if (zoeView && !zoeView.classList.contains('hidden')) {
         zoeView.classList.add('hidden');
         zoeView.classList.remove('flex');
         document.body.classList.remove('zoe-active');
+        viewsChanged = true;
+    }
+
+    if (storyView && !storyView.classList.contains('hidden')) {
+        storyView.classList.add('hidden');
+        viewsChanged = true;
+    }
+
+    if (viewsChanged) {
         if (mainView) mainView.classList.remove('hidden');
         if (triggerBtn) triggerBtn.classList.remove('hidden');
     }
     
-    const target = document.getElementById(id);
-    if (target) {
-        target.scrollIntoView({behavior: 'smooth', block: 'start'});
-    }
+    // Need a tiny timeout to let the browser unhide the main view before scrolling
+    setTimeout(() => {
+        const target = document.getElementById(id);
+        if (target) {
+            target.scrollIntoView({behavior: 'smooth', block: 'start'});
+        }
+    }, 10);
 }
 (window as any).closeZoeAndScroll = closeZoeAndScroll;
 
