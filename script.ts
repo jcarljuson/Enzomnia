@@ -320,6 +320,8 @@ export function updateCartUI(): void {
     }
 
     totalAmount.textContent = displayTotal.toFixed(2);
+    const checkoutTotal = document.getElementById('checkout-total-amount');
+    if (checkoutTotal) checkoutTotal.textContent = displayTotal.toFixed(2);
     
     const cartBadge = document.getElementById('cart-badge');
     if (cartBadge) {

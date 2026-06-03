@@ -121,14 +121,7 @@
             <!-- Cart items go here dynamically -->
         </div>
         <div class="cart-footer p-[25px] pb-[calc(25px+env(safe-area-inset-bottom))] border-t border-[#eee] dark:border-[#23332a] transition-colors duration-[400ms]">
-            <div id="token-discount-section" style="display: none; margin-bottom: 10px; font-size: 0.9rem; color: #4caf50; font-weight: bold;">
-                <label style="cursor: pointer; display: flex; align-items: center; gap: 8px;">
-                    <input type="checkbox" id="use-tokens-checkbox" onchange="toggleTokens()">
-                    <span>Apply <span id="applicable-tokens">0</span> tokens for ₱<span id="applicable-discount">0</span> off!</span>
-                </label>
-            </div>
             <div class="cart-total text-[1.3rem] font-bold mb-[20px] flex justify-between"><span>Total:</span> <span>₱<span id="cart-total-amount">0.00</span></span></div>
-            <p id="token-promo" class="token-promo text-[0.85rem] text-[#d68a27] dark:text-[#55d699] font-extrabold text-center mt-0 mb-[15px]">Login to collect tokens with every purchase!</p>
             <button id="checkout-btn" class="w-full p-[16px] bg-[#1e3932] text-white border-none rounded-[12px] text-[1.1rem] font-bold cursor-pointer transition-colors duration-300 hover:bg-[#132722] dark:bg-[#2b8a5d] dark:text-[#ffffff] dark:hover:bg-[#1e6e49]">Checkout</button>
         </div>
     </div>
@@ -206,6 +199,21 @@
                         <span class="slider"></span>
                         <span class="label-text">Download Receipt (.txt)</span>
                     </label>
+                </div>
+
+                <div class="form-section">
+                    <div id="token-discount-section" style="display: none; margin-bottom: 10px; font-size: 0.95rem; color: #4caf50; font-weight: bold; background: rgba(76,175,80,0.1); padding: 15px; border-radius: 12px;">
+                        <label style="cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                            <input type="checkbox" id="use-tokens-checkbox" onchange="toggleTokens()" style="transform: scale(1.2);">
+                            <span>Apply <span id="applicable-tokens">0</span> tokens for ₱<span id="applicable-discount">0</span> off!</span>
+                        </label>
+                    </div>
+                    <p id="token-promo" class="token-promo text-[0.85rem] text-[#d68a27] dark:text-[#55d699] font-extrabold text-center mt-[10px] mb-[20px]">Login to collect tokens with every purchase!</p>
+                    
+                    <div class="cart-total text-[1.3rem] font-bold mb-[20px] flex justify-between items-center bg-[#f9f9f9] dark:bg-[#1e2a22] p-[15px] rounded-[12px]">
+                        <span>Total:</span> 
+                        <span>₱<span id="checkout-total-amount">0.00</span></span>
+                    </div>
                 </div>
 
                 <div class="modal-actions premium-actions">
