@@ -215,3 +215,15 @@ body.night-mode .zoe-speech-right::before {
 ::-webkit-scrollbar-thumb:hover {
     background-color: var(--sb-hover-color);
 }
+
+/* Make AI interface background purely black ONLY on iPhone/iOS to hide the WebM black background */
+@supports (-webkit-touch-callout: none) {
+    body.zoe-active {
+        background-color: #000000 !important;
+    }
+    body.zoe-active #main-header {
+        background-color: transparent !important;
+        backdrop-filter: none !important;
+        border: none !important;
+    }
+}

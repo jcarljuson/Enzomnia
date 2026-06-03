@@ -357,6 +357,7 @@ export function toggleZoeModal(): void {
             mainView.classList.add('hidden');
             zoeView.classList.remove('hidden');
             zoeView.classList.add('flex');
+            document.body.classList.add('zoe-active');
             window.scrollTo(0, 0); // Jump to top so header is visible
             if (triggerBtn) triggerBtn.classList.add('hidden');
             
@@ -371,6 +372,7 @@ export function toggleZoeModal(): void {
             // Close Zoe
             zoeView.classList.add('hidden');
             zoeView.classList.remove('flex');
+            document.body.classList.remove('zoe-active');
             mainView.classList.remove('hidden');
             if (triggerBtn) triggerBtn.classList.remove('hidden');
         }
@@ -386,6 +388,7 @@ export function closeZoeAndScroll(id: string): void {
     if (zoeView && !zoeView.classList.contains('hidden')) {
         zoeView.classList.add('hidden');
         zoeView.classList.remove('flex');
+        document.body.classList.remove('zoe-active');
         if (mainView) mainView.classList.remove('hidden');
         if (triggerBtn) triggerBtn.classList.remove('hidden');
     }
