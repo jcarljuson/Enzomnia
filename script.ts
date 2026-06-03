@@ -4,7 +4,7 @@ import { ModeManager } from './classes/ModeManager';
 import { User, GuestUser, RegisteredUser } from './classes/User';
 import { auth, googleProvider, db } from './firebase';
 import { signInWithPopup, onAuthStateChanged, signOut } from 'firebase/auth';
-import { collection, getDocs, setDoc, doc, getDoc, onSnapshot } from 'firebase/firestore';
+import { collection, getDocs, setDoc, doc, getDoc, onSnapshot, updateDoc } from 'firebase/firestore';
 
 // global vars from other files
 declare const google: any;
@@ -23,18 +23,18 @@ async function loadProductsFromFirestore() {
         console.log("No products found in Firestore. Seeding initial data...");
         const initialProducts = [
             // Day Menu
-            new Beverage("D1", "Zo's Morning Brew", 120, "Day", 50, "/assets/UnderDevelopmentImage.png", "Regular", true),
-            new Beverage("D2", "Zo's Iced Matcha Latte", 160, "Day", 30, "/assets/UnderDevelopmentImage.png", "Large", false),
-            new FoodItem("F1", "Zo's Avocado Toast", 180, "Day", 20, "/assets/UnderDevelopmentImage.png", "Vegan"),
+            new Beverage("D1", "Zo's Morning Brew", 120, "Day", 50, "/assets/products/morning-brew.png", "Regular", true),
+            new Beverage("D2", "Zo's Iced Matcha Latte", 160, "Day", 30, "/assets/products/matcha-latte.png", "Large", false),
+            new FoodItem("F1", "Zo's Avocado Toast", 180, "Day", 20, "/assets/products/avocado-toast.png", "Vegan"),
 
             // Night Menu
-            new Beverage("N1", "Zo's Midnight Espresso", 140, "Night", 40, "/assets/UnderDevelopmentImage.png", "Small", true),
-            new Beverage("N2", "Zo's Chamomile Tea", 110, "Night", 25, "/assets/UnderDevelopmentImage.png", "Regular", true),
-            new FoodItem("F2", "Zo's Dark Chocolate Cake", 150, "Night", 20, "/assets/UnderDevelopmentImage.png", "Vegetarian"),
+            new Beverage("N1", "Zo's Midnight Espresso", 140, "Night", 40, "/assets/products/midnight-espresso.png", "Small", true),
+            new Beverage("N2", "Zo's Chamomile Tea", 110, "Night", 25, "/assets/products/chamomile-tea.png", "Regular", true),
+            new FoodItem("F2", "Zo's Dark Chocolate Cake", 150, "Night", 20, "/assets/products/chocolate-cake.png", "Vegetarian"),
 
             // Both
-            new Beverage("B1", "Zo's Signature Latte", 150, "Both", 100, "/assets/UnderDevelopmentImage.png", "Regular", true),
-            new FoodItem("B2", "Zo's Blueberry Muffin", 110, "Both", 30, "/assets/UnderDevelopmentImage.png", "Normal")
+            new Beverage("B1", "Zo's Signature Latte", 150, "Both", 100, "/assets/products/signature-latte.png", "Regular", true),
+            new FoodItem("B2", "Zo's Blueberry Muffin", 110, "Both", 30, "/assets/products/blueberry-muffin.png", "Normal")
         ];
 
         for (const prod of initialProducts) {
@@ -57,14 +57,33 @@ async function loadProductsFromFirestore() {
             allProducts.push(prod);
         }
     } else {
-        snapshot.forEach(doc => {
-            const data = doc.data();
+        const imageMap: { [key: string]: string } = {
+            "D1": "/assets/products/morning-brew.png",
+            "D2": "/assets/products/matcha-latte.png",
+            "F1": "/assets/products/avocado-toast.png",
+            "N1": "/assets/products/midnight-espresso.png",
+            "N2": "/assets/products/chamomile-tea.png",
+            "F2": "/assets/products/chocolate-cake.png",
+            "B1": "/assets/products/signature-latte.png",
+            "B2": "/assets/products/blueberry-muffin.png"
+        };
+
+        for (const docSnap of snapshot.docs) {
+            let data = docSnap.data();
+            
+            if (data.image && data.image.includes("UnderDevelopmentImage") && imageMap[data.id]) {
+                const newImg = imageMap[data.id];
+                console.log(`Updating image for ${data.id} in Firestore to ${newImg}...`);
+                await updateDoc(doc(db, "products", data.id), { image: newImg });
+                data.image = newImg;
+            }
+
             if (data.type === 'Beverage') {
                 allProducts.push(new Beverage(data.id, data.name, data.price, data.mode, data.stock, data.image, data.size, data.isHot));
             } else {
                 allProducts.push(new FoodItem(data.id, data.name, data.price, data.mode, data.stock, data.image, data.dietType));
             }
-        });
+        }
     }
     
     renderProducts();
