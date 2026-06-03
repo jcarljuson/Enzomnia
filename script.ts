@@ -1214,11 +1214,7 @@ CRITICAL RULES:
                             const groqMessages = [
                                 { role: 'system', content: systemPrompt },
                                 { role: 'assistant', content: 'Got it. I am Zo, ready to serve!' },
-                                ...zoeChatHistory.map(m => ({
-                                    role: m.role === 'user' ? 'user' : 'assistant',
-                                    content: m.text
-                                })),
-                                { role: 'user', content: userMessage }
+                                { role: 'user', content: textValue }
                             ];
                             
                             try {
@@ -1259,11 +1255,7 @@ CRITICAL RULES:
                             const mistralMessages = [
                                 { role: 'system', content: systemPrompt },
                                 { role: 'assistant', content: 'Got it. I am Zo, ready to serve!' },
-                                ...zoeChatHistory.map(m => ({
-                                    role: m.role === 'user' ? 'user' : 'assistant',
-                                    content: m.text
-                                })),
-                                { role: 'user', content: userMessage }
+                                { role: 'user', content: textValue }
                             ];
                             
                             try {
