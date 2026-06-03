@@ -113,8 +113,8 @@ export function renderProducts(): void {
         itemDiv.className = 'item bg-[#eef2f5] dark:bg-[#16201acc] rounded-[24px] shadow-[0_4px_20px_rgba(0,0,0,0.04)] dark:shadow-none border border-black/5 dark:border-white/5 flex flex-col p-[20px] text-center relative mt-[80px] transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(30,57,50,0.1)] dark:hover:shadow-[0_20px_40px_rgba(0,0,0,0.5)] dark:backdrop-blur-[10px]';
         itemDiv.innerHTML = `
             <div class="mode-badge mode-${product.getMode().toLowerCase()}">${product.getMode()}</div>
-            <div class="item-img-container relative w-full -mt-[90px] flex justify-center items-end mb-[15px]">
-                <img src="${product.getImage()}" alt="${product.getName()}" class="h-[180px] w-auto max-w-full object-contain drop-shadow-[0_15px_15px_rgba(0,0,0,0.15)] transition-transform duration-400 z-[2] group-hover:-translate-y-[10px] group-hover:scale-105">
+            <div class="item-img-container relative w-full -mt-[110px] flex justify-center items-end mb-[15px]">
+                <img src="${product.getImage()}" alt="${product.getName()}" class="h-[230px] w-auto max-w-full object-contain drop-shadow-[0_15px_15px_rgba(0,0,0,0.15)] transition-transform duration-400 z-[2] group-hover:-translate-y-[10px] group-hover:scale-105">
             </div>
             <div class="item-content flex flex-col flex-1 justify-end">
                 <h3 class="m-0 mb-[5px] font-['Plus_Jakarta_Sans'] text-[1.4rem] font-extrabold text-[#2b3a55] dark:text-[#eaf4f0] transition-colors duration-[1500ms]">${product.getName()}</h3>

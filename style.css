@@ -185,3 +185,38 @@ body.night-mode .zoe-speech-right::before {
     background: linear-gradient(135deg, #4CAF50, #2E7D32);
     color: #fff;
 }
+
+/* Global Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 12px;
+}
+
+::-webkit-scrollbar-track {
+    background: #eef2f5;
+    transition: background 1.5s ease-in-out;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #1e3932;
+    border-radius: 10px;
+    border: 3px solid #eef2f5;
+    transition: background-color 1.5s ease-in-out, border-color 1.5s ease-in-out;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: #d68a27;
+}
+
+/* Dark Mode Scrollbar */
+.dark ::-webkit-scrollbar-track {
+    background: #0f1714;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+    background-color: #3bbd81;
+    border: 3px solid #0f1714;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+    background-color: #d68a27;
+}
