@@ -2,13 +2,11 @@ export abstract class User {
     protected userId: string;
     protected name: string;
     protected email: string;
-    protected phone: string;
 
-    constructor(userId: string, name: string, email: string, phone: string) {
+    constructor(userId: string, name: string, email: string) {
         this.userId = userId;
         this.name = name;
         this.email = email;
-        this.phone = phone;
     }
 
     public abstract login(): boolean;
@@ -20,8 +18,8 @@ export abstract class User {
 export class GuestUser extends User {
     private sessionId: string;
 
-    constructor(userId: string, name: string, email: string, phone: string, sessionId: string) {
-        super(userId, name, email, phone);
+    constructor(userId: string, name: string, email: string, sessionId: string) {
+        super(userId, name, email);
         this.sessionId = sessionId;
     }
 
@@ -33,8 +31,8 @@ export class GuestUser extends User {
 export class RegisteredUser extends User {
     private prefMode: string;
 
-    constructor(userId: string, name: string, email: string, phone: string, prefMode: string) {
-        super(userId, name, email, phone);
+    constructor(userId: string, name: string, email: string, prefMode: string) {
+        super(userId, name, email);
         this.prefMode = prefMode;
     }
 

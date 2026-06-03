@@ -417,7 +417,7 @@ export function showToast(message: string): void {
 export let isLoggedIn = false;
 export let currentUserTokens = 0;
 export let isApplyingTokens = false;
-export let currentUser: User = new GuestUser("GUEST_1", "Guest", "", "", "session_" + Date.now());
+export let currentUser: User = new GuestUser("GUEST_1", "Guest", "", "session_" + Date.now());
 
 document.addEventListener('DOMContentLoaded', () => {
     ModeManager.applyTheme();
@@ -1291,7 +1291,7 @@ CRITICAL RULES:
 
         if (user) {
             isLoggedIn = true;
-            currentUser = new RegisteredUser(user.uid, user.displayName || "User", user.email || "", "", "Day");
+            currentUser = new RegisteredUser(user.uid, user.displayName || "User", user.email || "", "Day");
             
             if (logoutBtn) logoutBtn.style.display = 'inline';
             if (tokenPromo) tokenPromo.style.display = 'none';
@@ -1336,7 +1336,7 @@ CRITICAL RULES:
 
         } else {
             isLoggedIn = false;
-            currentUser = new GuestUser("GUEST_1", "Guest", "", "", "session_" + Date.now());
+            currentUser = new GuestUser("GUEST_1", "Guest", "", "session_" + Date.now());
             currentUserTokens = 0;
             isApplyingTokens = false;
             updateCartUI();
