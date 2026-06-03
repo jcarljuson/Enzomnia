@@ -400,6 +400,35 @@ export function closeZoeAndScroll(id: string): void {
 }
 (window as any).closeZoeAndScroll = closeZoeAndScroll;
 
+export function toggleStoryView(): void {
+    const storyView = document.getElementById('story-view');
+    const mainView = document.getElementById('main-scroll-view');
+    const zoeView = document.getElementById('zoe-view');
+    const triggerBtn = document.getElementById('zoe-trigger-btn');
+    
+    if (storyView) {
+        if (storyView.classList.contains('hidden')) {
+            // Open Story View
+            storyView.classList.remove('hidden');
+            if (mainView) mainView.classList.add('hidden');
+            if (zoeView) {
+                zoeView.classList.add('hidden');
+                zoeView.classList.remove('flex');
+            }
+            if (triggerBtn) triggerBtn.classList.add('hidden');
+            document.body.classList.remove('zoe-active');
+            window.scrollTo(0, 0); // scroll to top
+        } else {
+            // Close Story View
+            storyView.classList.add('hidden');
+            if (mainView) mainView.classList.remove('hidden');
+            if (triggerBtn) triggerBtn.classList.remove('hidden');
+            window.scrollTo(0, 0);
+        }
+    }
+}
+(window as any).toggleStoryView = toggleStoryView;
+
 export function sendZoePreChat(text: string): void {
     const input = document.getElementById('zoe-input') as HTMLInputElement;
     const form = document.getElementById('zoe-form') as HTMLFormElement;

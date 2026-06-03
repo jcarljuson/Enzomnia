@@ -22,7 +22,7 @@
         <nav class="flex justify-between items-center px-[40px] py-[14px] w-[90%] max-w-[1100px] bg-[#e8f5e966] backdrop-blur-[25px] backdrop-saturate-[180%] rounded-full border border-[#1e3932]/10 shadow-[0_8px_32px_rgba(30,57,50,0.12)] transition-all duration-[400ms] relative dark:bg-[#16201a99] dark:border-white/10 dark:shadow-[0_8px_32px_rgba(0,0,0,0.5)] dark:text-white">
             <div class="flex items-center gap-[30px] max-md:gap-[10px] max-sm:gap-[8px]">
                 <span onclick="closeZoeAndScroll('menu')" class="text-[0.72rem] font-bold tracking-[0.12em] cursor-pointer transition-opacity duration-300 hover:opacity-70 max-md:text-[0.6rem] max-sm:hidden">MENU</span>
-                <span onclick="closeZoeAndScroll('our-story')" class="text-[0.72rem] font-bold tracking-[0.12em] cursor-pointer transition-opacity duration-300 hover:opacity-70 max-md:text-[0.6rem] max-sm:hidden">OUR STORY</span>
+                <span onclick="toggleStoryView()" class="text-[0.72rem] font-bold tracking-[0.12em] cursor-pointer transition-opacity duration-300 hover:opacity-70 max-md:text-[0.6rem] max-sm:hidden">OUR STORY</span>
                 <div class="relative max-sm:block hidden">
                     <svg onclick="document.getElementById('mobile-dropdown').classList.toggle('hidden')" xmlns="http://www.w3.org/2000/svg" class="w-[24px] h-[24px] cursor-pointer opacity-80 hover:opacity-100 transition-opacity" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="3" y1="12" x2="21" y2="12"></line>
@@ -31,7 +31,7 @@
                     </svg>
                     <div id="mobile-dropdown" class="hidden absolute top-[40px] -left-[10px] bg-white dark:bg-[#1e2a22] shadow-[0_20px_40px_rgba(0,0,0,0.2)] rounded-[15px] p-[8px] flex flex-col w-[140px] border border-black/10 dark:border-white/10 z-[2000] overflow-hidden">
                         <span onclick="closeZoeAndScroll('menu'); document.getElementById('mobile-dropdown').classList.add('hidden')" class="font-bold text-[0.9rem] tracking-wider cursor-pointer transition-colors duration-300 hover:bg-[#e8f5e9] dark:hover:bg-[#2b8a5d] text-[#1e3932] dark:text-[#eaf4f0] py-[10px] px-[10px] rounded-[8px] text-center">MENU</span>
-                        <span onclick="closeZoeAndScroll('our-story'); document.getElementById('mobile-dropdown').classList.add('hidden')" class="font-bold text-[0.9rem] tracking-wider cursor-pointer transition-colors duration-300 hover:bg-[#e8f5e9] dark:hover:bg-[#2b8a5d] text-[#1e3932] dark:text-[#eaf4f0] py-[10px] px-[10px] rounded-[8px] text-center">OUR STORY</span>
+                        <span onclick="toggleStoryView(); document.getElementById('mobile-dropdown').classList.add('hidden')" class="font-bold text-[0.9rem] tracking-wider cursor-pointer transition-colors duration-300 hover:bg-[#e8f5e9] dark:hover:bg-[#2b8a5d] text-[#1e3932] dark:text-[#eaf4f0] py-[10px] px-[10px] rounded-[8px] text-center">OUR STORY</span>
                     </div>
                 </div>
             </div>
@@ -339,6 +339,60 @@
                     </svg>
                 </button>
             </form>
+        </div>
+    </div>
+
+    <!-- Story / Timeline View -->
+    <div id="story-view" class="hidden min-h-[100dvh] w-full max-w-[1200px] mx-auto px-[20px] pt-[120px] pb-[60px] animate-[fadeIn_0.4s_ease-out] relative">
+        <!-- Close Button -->
+        <button class="absolute top-[30px] right-[20px] w-[40px] h-[40px] rounded-full bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 flex items-center justify-center text-[1.5rem] text-[#666] dark:text-[#aaa] cursor-pointer transition-colors z-[100] border-none" onclick="toggleStoryView()">
+            &times;
+        </button>
+        
+        <h1 class="text-[clamp(2.5rem,6vw,4rem)] font-bold text-center mb-[20px] text-[#1e3932] dark:text-[#eaf4f0] font-['Plus_Jakarta_Sans']">Our Journey</h1>
+        <p class="text-center text-[#666] dark:text-[#9bb3a6] mb-[60px] max-w-[600px] mx-auto text-[1.1rem]">The roadmap of how Enzomnia came to life, from our first idea to the full website.</p>
+        
+        <div class="relative w-full max-w-[800px] mx-auto before:content-[''] before:absolute before:top-0 before:left-[20px] md:before:left-1/2 before:-translate-x-1/2 before:w-[4px] before:h-full before:bg-[#1e3932]/20 dark:before:bg-[#3bbd81]/20">
+            
+            <!-- Timeline Item 1 -->
+            <div class="relative w-full mb-[60px] flex justify-end md:justify-end md:w-1/2 md:pr-[40px] md:ml-0 pl-[60px] md:pl-0">
+                <div class="absolute left-[20px] md:-right-[8px] md:left-auto top-[20px] -translate-x-1/2 md:translate-x-0 w-[16px] h-[16px] rounded-full bg-[#1e3932] dark:bg-[#3bbd81] shadow-[0_0_0_4px_white] dark:shadow-[0_0_0_4px_#16201a] z-10"></div>
+                <div class="bg-white dark:bg-[#1e2a22] p-[20px] rounded-[20px] shadow-lg border border-black/5 dark:border-white/5 w-full">
+                    <h3 class="font-bold text-[1.3rem] mb-[15px] text-[#1e3932] dark:text-[#3bbd81]">Phase 1: The Concept</h3>
+                    <div class="w-full aspect-video bg-gray-200 dark:bg-[#111] rounded-[10px] flex items-center justify-center text-gray-400 dark:text-gray-600 font-medium mb-[15px] border-2 border-dashed border-gray-300 dark:border-gray-700">Image Placeholder</div>
+                    <p class="text-[#666] dark:text-[#9bb3a6] text-[0.95rem] leading-[1.6]">Brainstorming the core identity of Enzomnia and sketching the first concepts.</p>
+                </div>
+            </div>
+
+            <!-- Timeline Item 2 -->
+            <div class="relative w-full mb-[60px] flex justify-end md:justify-start md:w-1/2 md:pl-[40px] md:ml-[50%] pl-[60px] md:pl-0">
+                <div class="absolute left-[20px] md:-left-[8px] top-[20px] -translate-x-1/2 md:translate-x-0 w-[16px] h-[16px] rounded-full bg-[#1e3932] dark:bg-[#3bbd81] shadow-[0_0_0_4px_white] dark:shadow-[0_0_0_4px_#16201a] z-10"></div>
+                <div class="bg-white dark:bg-[#1e2a22] p-[20px] rounded-[20px] shadow-lg border border-black/5 dark:border-white/5 w-full">
+                    <h3 class="font-bold text-[1.3rem] mb-[15px] text-[#1e3932] dark:text-[#3bbd81]">Phase 2: UI Design</h3>
+                    <div class="w-full aspect-video bg-gray-200 dark:bg-[#111] rounded-[10px] flex items-center justify-center text-gray-400 dark:text-gray-600 font-medium mb-[15px] border-2 border-dashed border-gray-300 dark:border-gray-700">Image Placeholder</div>
+                    <p class="text-[#666] dark:text-[#9bb3a6] text-[0.95rem] leading-[1.6]">Crafting the glassmorphism theme and designing the user experience.</p>
+                </div>
+            </div>
+
+            <!-- Timeline Item 3 -->
+            <div class="relative w-full mb-[60px] flex justify-end md:justify-end md:w-1/2 md:pr-[40px] md:ml-0 pl-[60px] md:pl-0">
+                <div class="absolute left-[20px] md:-right-[8px] md:left-auto top-[20px] -translate-x-1/2 md:translate-x-0 w-[16px] h-[16px] rounded-full bg-[#1e3932] dark:bg-[#3bbd81] shadow-[0_0_0_4px_white] dark:shadow-[0_0_0_4px_#16201a] z-10"></div>
+                <div class="bg-white dark:bg-[#1e2a22] p-[20px] rounded-[20px] shadow-lg border border-black/5 dark:border-white/5 w-full">
+                    <h3 class="font-bold text-[1.3rem] mb-[15px] text-[#1e3932] dark:text-[#3bbd81]">Phase 3: Development</h3>
+                    <div class="w-full aspect-video bg-gray-200 dark:bg-[#111] rounded-[10px] flex items-center justify-center text-gray-400 dark:text-gray-600 font-medium mb-[15px] border-2 border-dashed border-gray-300 dark:border-gray-700">Image Placeholder</div>
+                    <p class="text-[#666] dark:text-[#9bb3a6] text-[0.95rem] leading-[1.6]">Building the interactive website and integrating the shopping cart.</p>
+                </div>
+            </div>
+
+            <!-- Timeline Item 4 -->
+            <div class="relative w-full mb-[60px] flex justify-end md:justify-start md:w-1/2 md:pl-[40px] md:ml-[50%] pl-[60px] md:pl-0">
+                <div class="absolute left-[20px] md:-left-[8px] top-[20px] -translate-x-1/2 md:translate-x-0 w-[16px] h-[16px] rounded-full bg-[#1e3932] dark:bg-[#3bbd81] shadow-[0_0_0_4px_white] dark:shadow-[0_0_0_4px_#16201a] z-10"></div>
+                <div class="bg-white dark:bg-[#1e2a22] p-[20px] rounded-[20px] shadow-lg border border-black/5 dark:border-white/5 w-full">
+                    <h3 class="font-bold text-[1.3rem] mb-[15px] text-[#1e3932] dark:text-[#3bbd81]">Phase 4: AI Bartender</h3>
+                    <div class="w-full aspect-video bg-gray-200 dark:bg-[#111] rounded-[10px] flex items-center justify-center text-gray-400 dark:text-gray-600 font-medium mb-[15px] border-2 border-dashed border-gray-300 dark:border-gray-700">Image Placeholder</div>
+                    <p class="text-[#666] dark:text-[#9bb3a6] text-[0.95rem] leading-[1.6]">Bringing Zoe to life with smart AI responses and transparent video integration.</p>
+                </div>
+            </div>
         </div>
     </div>
 
