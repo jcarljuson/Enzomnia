@@ -466,8 +466,19 @@
         </div>
     </div>
 
+    <!-- Image Preview Modal -->
+    <div id="image-preview-modal" class="hidden fixed inset-0 z-[3000] bg-black/90 backdrop-blur-sm flex items-center justify-center p-[20px] transition-opacity duration-300 opacity-0" onclick="closeImagePreview()">
+        <button onclick="closeImagePreview()" class="absolute top-[20px] right-[20px] text-white/70 hover:text-white transition-colors bg-black/50 p-2 rounded-full z-10">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-[30px] h-[30px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </button>
+        <img id="preview-image" src="" class="hidden max-w-full max-h-[90dvh] object-contain rounded-[10px] shadow-2xl" onclick="event.stopPropagation()">
+        <video id="preview-video" src="" class="hidden max-w-full max-h-[90dvh] object-contain rounded-[10px] shadow-2xl" controls autoplay loop playsinline onclick="event.stopPropagation()"></video>
+    </div>
+
     <!-- Firebase SDKs are loaded via ES modules in main.ts/script.ts -->
     <script type="module" src="/script.ts"></script>
 </body>
-
 </html> 

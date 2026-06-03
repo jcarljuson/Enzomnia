@@ -1582,3 +1582,59 @@ setTimeout(() => {
         triggerBtn.classList.remove('opacity-0', 'translate-y-[50px]', 'scale-50', 'pointer-events-none');
     }
 }, 10000);
+
+// Image/Video Preview Modal Logic
+export function openImagePreview(src: string, type: 'image' | 'video'): void {
+    const modal = document.getElementById('image-preview-modal');
+    const imgEl = document.getElementById('preview-image') as HTMLImageElement;
+    const vidEl = document.getElementById('preview-video') as HTMLVideoElement;
+    
+    if (modal && imgEl && vidEl) {
+        modal.classList.remove('hidden');
+        // Small timeout for transition
+        setTimeout(() => {
+            modal.classList.remove('opacity-0');
+        }, 10);
+        
+        if (type === 'image') {
+            imgEl.src = src;
+            imgEl.classList.remove('hidden');
+            vidEl.classList.add('hidden');
+            vidEl.pause();
+        } else {
+            vidEl.src = src;
+            vidEl.classList.remove('hidden');
+            imgEl.classList.add('hidden');
+            vidEl.play();
+        }
+    }
+}
+
+export function closeImagePreview(): void {
+    const modal = document.getElementById('image-preview-modal');
+    const vidEl = document.getElementById('preview-video') as HTMLVideoElement;
+    if (modal) {
+        modal.classList.add('opacity-0');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            if (vidEl) vidEl.pause();
+        }, 300);
+    }
+}
+(window as any).openImagePreview = openImagePreview;
+(window as any).closeImagePreview = closeImagePreview;
+
+// Attach click listeners to all story images/videos on load
+document.addEventListener('DOMContentLoaded', () => {
+    const storyMedia = document.querySelectorAll('#story-view img, #story-view video');
+    storyMedia.forEach((media) => {
+        media.classList.add('cursor-pointer', 'transition-transform', 'duration-300', 'hover:scale-105');
+        media.addEventListener('click', (e) => {
+            const el = e.target as HTMLElement;
+            const src = el.getAttribute('src');
+            if (src) {
+                openImagePreview(src, el.tagName.toLowerCase() === 'video' ? 'video' : 'image');
+            }
+        });
+    });
+});
