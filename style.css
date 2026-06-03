@@ -159,3 +159,29 @@ body.night-mode .zoe-speech-right::before {
 .animate-popup {
     animation: popupSpring 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
+
+.mode-badge {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    z-index: 10;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+.mode-day {
+    background: linear-gradient(135deg, #FFD54F, #FFB300);
+    color: #fff;
+}
+.mode-night {
+    background: linear-gradient(135deg, #7E57C2, #512DA8);
+    color: #fff;
+}
+.mode-both {
+    background: linear-gradient(135deg, #4CAF50, #2E7D32);
+    color: #fff;
+}
