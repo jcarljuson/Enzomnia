@@ -23,18 +23,18 @@ async function loadProductsFromFirestore() {
         console.log("No products found in Firestore. Seeding initial data...");
         const initialProducts = [
             // Day Menu
-            new Beverage("D1", "Zo's Morning Brew", 120, "Day", 50, "/assets/products/morning-brew.png", "Regular", true),
-            new Beverage("D2", "Zo's Iced Matcha Latte", 160, "Day", 30, "/assets/products/matcha-latte.png", "Large", false),
-            new FoodItem("F1", "Zo's Avocado Toast", 180, "Day", 20, "/assets/products/avocado-toast.png", "Vegan"),
+            new Beverage("D1", "Zo's Morning Brew", 120, "Day", 50, "/assets/products/day/morning-brew.png", "Regular", true),
+            new Beverage("D2", "Zo's Iced Matcha Latte", 160, "Day", 30, "/assets/products/day/matcha-latte.png", "Large", false),
+            new FoodItem("F1", "Zo's Avocado Toast", 180, "Day", 20, "/assets/products/day/avocado-toast.png", "Vegan"),
 
             // Night Menu
-            new Beverage("N1", "Zo's Midnight Espresso", 140, "Night", 40, "/assets/products/midnight-espresso.png", "Small", true),
-            new Beverage("N2", "Zo's Chamomile Tea", 110, "Night", 25, "/assets/products/chamomile-tea.png", "Regular", true),
-            new FoodItem("F2", "Zo's Dark Chocolate Cake", 150, "Night", 20, "/assets/products/chocolate-cake.png", "Vegetarian"),
+            new Beverage("N1", "Zo's Midnight Espresso", 140, "Night", 40, "/assets/products/night/midnight-espresso.png", "Small", true),
+            new Beverage("N2", "Zo's Chamomile Tea", 110, "Night", 25, "/assets/products/night/chamomile-tea.png", "Regular", true),
+            new FoodItem("F2", "Zo's Dark Chocolate Cake", 150, "Night", 20, "/assets/products/night/chocolate-cake.png", "Vegetarian"),
 
             // Both
-            new Beverage("B1", "Zo's Signature Latte", 150, "Both", 100, "/assets/products/signature-latte.png", "Regular", true),
-            new FoodItem("B2", "Zo's Blueberry Muffin", 110, "Both", 30, "/assets/products/blueberry-muffin.png", "Normal")
+            new Beverage("B1", "Zo's Signature Latte", 150, "Both", 100, "/assets/products/both/signature-latte.png", "Regular", true),
+            new FoodItem("B2", "Zo's Blueberry Muffin", 110, "Both", 30, "/assets/products/both/blueberry-muffin.png", "Normal")
         ];
 
         for (const prod of initialProducts) {
@@ -58,14 +58,14 @@ async function loadProductsFromFirestore() {
         }
     } else {
         const imageMap: { [key: string]: string } = {
-            "D1": "/assets/products/morning-brew.png",
-            "D2": "/assets/products/matcha-latte.png",
-            "F1": "/assets/products/avocado-toast.png",
-            "N1": "/assets/products/midnight-espresso.png",
-            "N2": "/assets/products/chamomile-tea.png",
-            "F2": "/assets/products/chocolate-cake.png",
-            "B1": "/assets/products/signature-latte.png",
-            "B2": "/assets/products/blueberry-muffin.png"
+            "D1": "/assets/products/day/morning-brew.png",
+            "D2": "/assets/products/day/matcha-latte.png",
+            "F1": "/assets/products/day/avocado-toast.png",
+            "N1": "/assets/products/night/midnight-espresso.png",
+            "N2": "/assets/products/night/chamomile-tea.png",
+            "F2": "/assets/products/night/chocolate-cake.png",
+            "B1": "/assets/products/both/signature-latte.png",
+            "B2": "/assets/products/both/blueberry-muffin.png"
         };
 
         for (const docSnap of snapshot.docs) {
