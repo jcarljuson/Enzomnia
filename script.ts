@@ -578,7 +578,16 @@ document.addEventListener('DOMContentLoaded', () => {
                                     downloadReceipt: (document.getElementById('download-receipt') as HTMLInputElement)?.checked || false
                                 };
                                 
-                                myCart.finalizeCheckout(checkoutData);
+                                myCart.finalizeCheckout(checkoutData).then(order => {
+                                    if (order && checkoutData.orderType === 'pickup') {
+                                        const qrModal = document.getElementById('qr-modal');
+                                        const qrImage = document.getElementById('qr-image') as HTMLImageElement;
+                                        if (qrModal && qrImage) {
+                                            qrImage.src = (order as any).getQrCode();
+                                            qrModal.classList.remove('hidden');
+                                        }
+                                    }
+                                });
                                 
                                 const checkoutModal = document.getElementById('checkout-modal');
                                 if (checkoutModal) checkoutModal.classList.add('hidden');
@@ -616,7 +625,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 downloadReceipt: (document.getElementById('download-receipt') as HTMLInputElement)?.checked || false
             };
             
-            myCart.finalizeCheckout(data);
+            myCart.finalizeCheckout(data).then(order => {
+                if (order && data.orderType === 'pickup') {
+                    const qrModal = document.getElementById('qr-modal');
+                    const qrImage = document.getElementById('qr-image') as HTMLImageElement;
+                    if (qrModal && qrImage) {
+                        qrImage.src = (order as any).getQrCode();
+                        qrModal.classList.remove('hidden');
+                    }
+                }
+            });
             if (checkoutModal) checkoutModal.classList.add('hidden');
         });
     }

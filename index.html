@@ -214,6 +214,18 @@
         </div>
     </div>
 
+    <!-- QR Code Modal -->
+    <div id="qr-modal" class="modal hidden fixed top-0 left-0 w-screen h-screen bg-black/70 justify-center items-center z-[10000] backdrop-blur-[5px] [&:not(.hidden)]:flex">
+        <div class="modal-content premium bg-white text-[#121212] dark:bg-[#16201a] dark:text-[#eaf4f0] p-[40px] rounded-[24px] w-[92%] max-w-[400px] text-center shadow-[0_30px_60px_rgba(0,0,0,0.15)] dark:shadow-[0_30px_60px_rgba(0,0,0,0.5)]">
+            <h2 class="text-[1.8rem] font-bold mb-[10px]">Order Ready for Pickup!</h2>
+            <p class="text-[0.95rem] mb-[30px] opacity-80">Please present this QR code to the barista when you arrive.</p>
+            <div class="qr-container bg-white p-[20px] rounded-[16px] inline-block shadow-inner mx-auto mb-[30px]">
+                <img id="qr-image" src="" alt="Pickup QR Code" class="w-[200px] h-[200px] object-contain">
+            </div>
+            <button onclick="document.getElementById('qr-modal').classList.add('hidden')" class="w-full bg-[#1e3932] text-white dark:bg-[#3bbd81] dark:text-[#121212] py-[16px] rounded-[50px] font-bold text-[1.1rem] hover:scale-105 transition-transform cursor-pointer">Done</button>
+        </div>
+    </div>
+
     <!-- Toast Notification -->
     <div id="toast" class="toast fixed bottom-[40px] left-1/2 -translate-x-1/2 translate-y-[20px] bg-[#111111] dark:bg-white text-white dark:text-[#111111] py-[14px] px-[28px] rounded-[50px] text-[0.95rem] font-bold z-[4000] opacity-0 transition-all duration-[400ms] ease-[cubic-bezier(0.165,0.84,0.44,1)] shadow-[0_10px_30px_rgba(0,0,0,0.2)] pointer-events-none tracking-[0.05em] [&.show]:translate-y-0 [&.show]:opacity-100"></div>
 

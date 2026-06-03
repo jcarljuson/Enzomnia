@@ -53,7 +53,12 @@ export class PickupOrder extends Order {
     }
 
     public generateQRCode(): void {
-        this.qrCode = "QR_" + this.getOrderId();
+        const dataStr = `ORDER_ID:${this.getOrderId()}|NAME:${this.getCustomerName()}|TIME:${this.pickupTime}`;
+        this.qrCode = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(dataStr)}`;
+    }
+    
+    public getQrCode(): string {
+        return this.qrCode;
     }
 }
  
