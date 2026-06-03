@@ -1253,6 +1253,51 @@ CRITICAL RULES:
                     }
 
                     if (!data) {
+                        const mistralKey = import.meta.env.VITE_MISTRAL_API_KEY;
+                        if (mistralKey) {
+                            console.warn("Groq/Gemini failed, falling back to Mistral API...");
+                            const mistralMessages = [
+                                { role: 'system', content: systemPrompt },
+                                { role: 'assistant', content: 'Got it. I am Zo, ready to serve!' },
+                                ...zoeChatHistory.map(m => ({
+                                    role: m.role === 'user' ? 'user' : 'assistant',
+                                    content: m.text
+                                })),
+                                { role: 'user', content: userMessage }
+                            ];
+                            
+                            try {
+                                const mistralRes = await fetch("https://api.mistral.ai/v1/chat/completions", {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'Authorization': `Bearer ${mistralKey}`
+                                    },
+                                    body: JSON.stringify({
+                                        model: 'mistral-small-latest',
+                                        messages: mistralMessages
+                                    })
+                                });
+                                
+                                const mistralResult = await mistralRes.json();
+                                if (mistralRes.ok && mistralResult.choices && mistralResult.choices[0]) {
+                                    data = {
+                                        candidates: [
+                                            { content: { parts: [{ text: mistralResult.choices[0].message.content }] } }
+                                        ]
+                                    };
+                                } else {
+                                    console.error("Mistral API Error:", mistralResult);
+                                    lastError = new Error(mistralResult.error?.message || `Mistral HTTP ${mistralRes.status}`);
+                                }
+                            } catch (mistralErr: any) {
+                                console.error("Mistral Network Error:", mistralErr);
+                                lastError = mistralErr;
+                            }
+                        }
+                    }
+
+                    if (!data) {
                         throw lastError || new Error("Failed after all retries and fallbacks");
                     }
                     
