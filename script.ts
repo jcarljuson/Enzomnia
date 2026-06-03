@@ -1208,7 +1208,52 @@ CRITICAL RULES:
                     }
                     
                     if (!data) {
-                        throw lastError || new Error("Failed after retries");
+                        const groqKey = import.meta.env.VITE_GROQ_API_KEY;
+                        if (groqKey) {
+                            console.warn("Gemini failed, falling back to Groq API...");
+                            const groqMessages = [
+                                { role: 'system', content: systemPrompt },
+                                { role: 'assistant', content: 'Got it. I am Zo, ready to serve!' },
+                                ...zoeChatHistory.map(m => ({
+                                    role: m.role === 'user' ? 'user' : 'assistant',
+                                    content: m.text
+                                })),
+                                { role: 'user', content: userMessage }
+                            ];
+                            
+                            try {
+                                const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'Authorization': `Bearer ${groqKey}`
+                                    },
+                                    body: JSON.stringify({
+                                        model: 'llama3-8b-8192',
+                                        messages: groqMessages
+                                    })
+                                });
+                                
+                                const groqResult = await groqRes.json();
+                                if (groqRes.ok && groqResult.choices && groqResult.choices[0]) {
+                                    data = {
+                                        candidates: [
+                                            { content: { parts: [{ text: groqResult.choices[0].message.content }] } }
+                                        ]
+                                    };
+                                } else {
+                                    console.error("Groq API Error:", groqResult);
+                                    lastError = new Error(groqResult.error?.message || `Groq HTTP ${groqRes.status}`);
+                                }
+                            } catch (groqErr: any) {
+                                console.error("Groq Network Error:", groqErr);
+                                lastError = groqErr;
+                            }
+                        }
+                    }
+
+                    if (!data) {
+                        throw lastError || new Error("Failed after all retries and fallbacks");
                     }
                     
                     // Hide the typing indicator (bouncing dots) but KEEP character talking while typing
