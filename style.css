@@ -216,10 +216,10 @@ body.night-mode .zoe-speech-right::before {
     background-color: var(--sb-hover-color);
 }
 
-/* Make AI interface background purely black ONLY on iPhone/iOS to hide the WebM black background */
+/* Make AI interface background blend seamlessly into dark UI on iPhone/iOS to hide the WebM black background */
 @supports (-webkit-touch-callout: none) {
     body.zoe-active {
-        background-color: #000000 !important;
+        background: radial-gradient(circle at 50% 85%, #000000 0%, #000000 25%, #132722 70%, #0d1310 100%) !important;
     }
     body.zoe-active #main-header {
         background-color: transparent !important;
